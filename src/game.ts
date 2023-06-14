@@ -1,4 +1,4 @@
-import {Engine, Actor, DisplayMode, Loader, Logger, Timer, TimerOptions,vec, Sound} from "excalibur"
+import {Engine, Actor, DisplayMode, Loader, Logger, Timer, TimerOptions,vec, Sound, ImageSource} from "excalibur"
 import { Resources } from "./resources";
 import { Player } from "./actors/player/player";
 import { Enemy } from "./actors/enemy/enemy";
@@ -9,21 +9,13 @@ export class Game extends Engine {
     private player: Player;
     private _enemy: Enemy;
     private _enemies: Enemy[] = [];
-    private _numOfEnemies = 20;
+    private _numOfEnemies = 100;
     constructor() {
     super({displayMode: DisplayMode.FillScreen, suppressHiDPIScaling: true, maxFps: 60});
-
-
-    
 
     }
 
     public start() {
-
-        //game initialization functions
-        this.createPlayer();
-        this.createShotTimer();
-        this.createEnemy()
 
         const loader = new Loader(Object.values(Resources))
         return super.start(loader)
@@ -48,15 +40,17 @@ export class Game extends Engine {
     }
 
     public createEnemy() {
+        let enemy = new Enemy(this.determineSpawnSide(this.canvasWidth),this.determineSpawnSide(this.canvasHeight),this.player);
+        this._enemies.push(enemy) 
+        this.add(enemy)   
+    }
+
+    public createEnemies() {
         for (let i = 0; i < this.numOfEnemies; i++) {
-            //let random = Math.floor(Math.random() * (this.halfCanvasHeight - 1)) + 0;
-            let enemy = new Enemy(this.canvasWidth*(Math.random()),this.canvasHeight*(Math.random()),this.player);
-            Logger.getInstance().info(enemy)
-            this._enemies.push(enemy) 
-            this.add(enemy)                 
+            this.createEnemy()             
         }
 
-        Logger.getInstance().info(this.player.projectiles)
+        // Logger.getInstance().info(this.player.projectiles)
            
     }
 
@@ -65,6 +59,8 @@ export class Game extends Engine {
         this._enemies.forEach((enemy,index) => {
             if (enemy.isKilled()) {
                 this._enemies.splice(index,1)
+                this.createEnemy()            
+
             }
         });
 
@@ -78,7 +74,7 @@ export class Game extends Engine {
             }
         });
 
-    Logger.getInstance().info(this.player.projectiles)
+    // Logger.getInstance().info(this.player.projectiles)
     }
 
 
@@ -86,5 +82,12 @@ export class Game extends Engine {
         return this._numOfEnemies
     }
 
+    public determineSpawnSide(dimension) {
+        if (Math.random() > 0.5) {
+            return Math.floor(Math.random() * (dimension + 1000 - dimension + 1)) + dimension;
+    } else {
+        return Math.floor(Math.random() * (dimension - dimension-1000 + 1)) + dimension-1000;
+    }
 
+}
 }

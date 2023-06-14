@@ -7,20 +7,23 @@ import { Player } from '../player/player';
 export class Enemy extends Actor {
 
   private target: Player;  
-  constructor(x:number,y:number,target: Player) {
+  private image: ImageSource;
+  constructor(x:number,y:number,target: Player) {  
+    let image = Enemy.getRandomProperty(Resources);
     super({
       pos: vec(x,y),
-      width: 25,
-      height: 25,
+      height: image.height,
+      width: image.width,
       color: new Color(255, 255, 255),
       collisionType:CollisionType.Passive
     });
     this.target = target
+    this.image = image
+ 
   }
 
 
-  public  getRandomProperty(obj): ImageSource {
-
+  static  getRandomProperty(obj): ImageSource {
     const values:ImageSource[] = Object.values(obj);
     return values[Math.floor(Math.random()*(8-3)+3)];
 
@@ -28,8 +31,7 @@ export class Enemy extends Actor {
 
   
   onInitialize() {
-    let random = this.getRandomProperty(Resources)
-     this.graphics.use(random.toSprite());
+     this.graphics.use(this.image.toSprite());
      this.actions.meet(this.target,100)
   }
 }

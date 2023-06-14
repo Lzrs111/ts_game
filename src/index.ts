@@ -7,5 +7,8 @@ import { Game } from './game';
 const game = new Game();
 
 game.start().then( ()=> {
-    Resources.main.play()
+    Resources.main.play(0.3)
+    game.createPlayer()
+    game.createEnemies()
+    game.createShotTimer()
 })

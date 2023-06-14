@@ -16,8 +16,8 @@ export class Player extends Actor {
   constructor(x: number,y: number) {
     super({
       pos: vec(x,y),
-      width: 25,
-      height: 25,
+      width: Resources.giljo.width,
+      height: Resources.giljo.height,
       color: new Color(255, 255, 255),
       name: "player"
     });
@@ -29,7 +29,11 @@ export class Player extends Actor {
       engine.input.keyboard.isHeld(Input.Keys.Up)
     ) {
       this.pos.y -=10;
-      this.orientation = Direction.Up
+      if (this.orientation != Direction.Up) {
+        this.orientation = Direction.Up
+        this.updateSprite()
+
+      }
     }
 
     if (
@@ -37,8 +41,11 @@ export class Player extends Actor {
       engine.input.keyboard.isHeld(Input.Keys.Down)
     ) {
       this.pos.y +=10;
-      this.orientation = Direction.Down
+      if (this.orientation != Direction.Down) {
+        this.orientation = Direction.Down
+        this.updateSprite()
 
+      }
     }
 
     if (
@@ -46,8 +53,11 @@ export class Player extends Actor {
       engine.input.keyboard.isHeld(Input.Keys.Left)
     ) {
       this.pos.x -=10;
-      this._sprite = Resources.giljoL.toSprite()
-      this.orientation = Direction.Left
+      if (this.orientation != Direction.Left) {
+        this.orientation = Direction.Left
+        this.updateSprite()
+
+      }
 
     }
 
@@ -56,8 +66,11 @@ export class Player extends Actor {
       engine.input.keyboard.isHeld(Input.Keys.Right)
     ) {
       this.pos.x +=10;
-      this._sprite = Resources.giljoR.toSprite()
-      this.orientation = Direction.Right
+      this.graphics.use(this._sprite)
+      if (this.orientation != Direction.Right) {
+        this.orientation = Direction.Right
+        this.updateSprite()
+      }
 
     }
   }
@@ -65,10 +78,13 @@ export class Player extends Actor {
     this._sprite = Resources.giljoR.toSprite()
     this.graphics.use(this._sprite)
   }
+  
+
 
 
   public shoot(num: number) {
-    this.weapon.shoot(this)
+    let first = new Projectile(this.determineProjectileOrientation(),this.pos.x,this.pos.y)
+    this.projectiles.push(first)
   }
 
   public get projectiles() {
@@ -79,10 +95,10 @@ export class Player extends Actor {
     this._orientation = orient
   }
 
-  public flip() {
-    this._sprite.flipHorizontal = !this._sprite.flipHorizontal
-    this.graphics.use(this._sprite)
-  }
+  // public flip() {
+  //   this._sprite.flipHorizontal = !this._sprite.flipHorizontal
+  //   this.graphics.use(this._sprite)
+  // }
 
   public determineProjectileOrientation():Vector {
 
@@ -99,6 +115,27 @@ export class Player extends Actor {
     }
 
   }
+
+  public updateSprite() {
+    
+    
+    switch (this._orientation) {
+      case Direction.Up:
+      case Direction.Down:
+        this._sprite = Resources.giljo.toSprite()
+        break
+      case Direction.Left:
+        this._sprite = Resources.giljoL.toSprite()
+        break
+      case Direction.Right:
+        this._sprite =  Resources.giljoR.toSprite()
+        break
+  }
+
+  this.graphics.use(this._sprite)
+  }
+
+  
 
  
 

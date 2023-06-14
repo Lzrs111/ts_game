@@ -7,7 +7,8 @@ import segment2 from "./images/booba2.png"
 import segment3 from "./images/booba3.png"
 import segment4 from "./images/booba4.png"
 import sengula from "./images/sengula.png";
-import main from "./sounds/main.mp3"
+import main from "./sounds/main.mp3";
+import giljo from "./images/giljo.png"
 
 /**
  * Default global resource dictionary. This gets loaded immediately
@@ -22,7 +23,8 @@ const Resources = {
     enemy2: new ImageSource(segment2),
     enemy3: new ImageSource(segment3),
     enemy4: new ImageSource(segment4),
-    main: new Sound(main)
+    main: new Sound(main),
+    giljo: new ImageSource(giljo)
 
 }
 
