@@ -3,7 +3,7 @@ import { Resources } from "../../resources";
 
 export class Projectile extends Actor {
     constructor(speedVector: Vector, x:number,y:number) {
-        super({vel: speedVector,height:Resources.sengula.height,width:Resources.sengula.width,pos: vec(x,y), collisionType: CollisionType.Passive})
+        super({vel: speedVector,height:Resources.sengula.height,width:Resources.sengula.width,pos: vec(x,y), collisionType: CollisionType.Passive,z:1})
     }
 
     public onInitialize(_engine: Engine): void {

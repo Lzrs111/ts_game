@@ -13,22 +13,36 @@ export class Player extends Actor {
   private _projectileSpeed: number = 1000;
   public _shotspeed: number = 300;
   public weapon: Weapon = new Weapon(vec(100,100))
+  private _xp: number = 0
+  private _level: number = 1
   constructor(x: number,y: number) {
     super({
       pos: vec(x,y),
       width: Resources.giljo.width,
       height: Resources.giljo.height,
       color: new Color(255, 255, 255),
-      name: "player"
+      name: "player",
+      z: 1
     });
   }
+
+
+  public get xp() {
+    return this._xp
+  }
+
+  public set xp(num: number) {
+    this._xp +=num 
+  }
+
+  
+
 
   public update(engine, delta) {
     if (
       engine.input.keyboard.isHeld(Input.Keys.W) ||
       engine.input.keyboard.isHeld(Input.Keys.Up)
     ) {
-      this.pos.y -=10;
       if (this.orientation != Direction.Up) {
         this.orientation = Direction.Up
         this.updateSprite()
@@ -40,7 +54,6 @@ export class Player extends Actor {
       engine.input.keyboard.isHeld(Input.Keys.S) ||
       engine.input.keyboard.isHeld(Input.Keys.Down)
     ) {
-      this.pos.y +=10;
       if (this.orientation != Direction.Down) {
         this.orientation = Direction.Down
         this.updateSprite()
@@ -52,7 +65,6 @@ export class Player extends Actor {
       engine.input.keyboard.isHeld(Input.Keys.A) ||
       engine.input.keyboard.isHeld(Input.Keys.Left)
     ) {
-      this.pos.x -=10;
       if (this.orientation != Direction.Left) {
         this.orientation = Direction.Left
         this.updateSprite()
@@ -65,13 +77,16 @@ export class Player extends Actor {
       engine.input.keyboard.isHeld(Input.Keys.D) ||
       engine.input.keyboard.isHeld(Input.Keys.Right)
     ) {
-      this.pos.x +=10;
       this.graphics.use(this._sprite)
       if (this.orientation != Direction.Right) {
         this.orientation = Direction.Right
         this.updateSprite()
       }
 
+    }
+
+    if (this.xp % 100 == 0 ) {
+      this._shotspeed-=10
     }
   }
   onInitialize() {

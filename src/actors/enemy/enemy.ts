@@ -8,6 +8,7 @@ export class Enemy extends Actor {
 
   private target: Player;  
   private image: ImageSource;
+  private speed: number = 5
   constructor(x:number,y:number,target: Player) {  
     let image = Enemy.getRandomProperty(Resources);
     super({
@@ -15,7 +16,8 @@ export class Enemy extends Actor {
       height: image.height,
       width: image.width,
       color: new Color(255, 255, 255),
-      collisionType:CollisionType.Passive
+      collisionType:CollisionType.Passive,
+      z: 1
     });
     this.target = target
     this.image = image
@@ -34,4 +36,42 @@ export class Enemy extends Actor {
      this.graphics.use(this.image.toSprite());
      this.actions.meet(this.target,100)
   }
+
+  public update(engine, delta) {
+    if (
+      engine.input.keyboard.isHeld(Input.Keys.W) ||
+      engine.input.keyboard.isHeld(Input.Keys.Up)
+    ) {
+      this.pos.y +=this.speed;
+
+    }
+
+    if (
+      engine.input.keyboard.isHeld(Input.Keys.S) ||
+      engine.input.keyboard.isHeld(Input.Keys.Down)
+    ) {
+      this.pos.y -=this.speed;
+  
+    }
+
+    if (
+      engine.input.keyboard.isHeld(Input.Keys.A) ||
+      engine.input.keyboard.isHeld(Input.Keys.Left)
+    ) {
+      this.pos.x +=this.speed;
+   
+
+    }
+
+    if (
+      engine.input.keyboard.isHeld(Input.Keys.D) ||
+      engine.input.keyboard.isHeld(Input.Keys.Right)
+    ) {
+      this.pos.x -=this.speed;
+      
+
+    }
+  }
+
+
 }

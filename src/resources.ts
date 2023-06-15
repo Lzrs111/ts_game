@@ -7,8 +7,17 @@ import segment2 from "./images/booba2.png"
 import segment3 from "./images/booba3.png"
 import segment4 from "./images/booba4.png"
 import sengula from "./images/sengula.png";
-import main from "./sounds/main.mp3";
+import main from "./sounds/explo.mp3";
 import giljo from "./images/giljo.png"
+import background1 from "./images/Small 512x512/Blue Nebula/Blue Nebula 1 - 512x512.png"
+import background2 from "./images/Small 512x512/Blue Nebula/Blue Nebula 2 - 512x512.png"
+import background3 from "./images/Small 512x512/Blue Nebula/Blue Nebula 3 - 512x512.png"
+import background4 from "./images/Small 512x512/Blue Nebula/Blue Nebula 4 - 512x512.png"
+import background5 from "./images/Small 512x512/Blue Nebula/Blue Nebula 5 - 512x512.png"
+import background6 from "./images/Small 512x512/Blue Nebula/Blue Nebula 6 - 512x512.png"
+import background7 from "./images/Small 512x512/Blue Nebula/Blue Nebula 7 - 512x512.png"
+import background8 from "./images/Small 512x512/Blue Nebula/Blue Nebula 8 - 512x512.png"
+
 
 /**
  * Default global resource dictionary. This gets loaded immediately
@@ -24,7 +33,16 @@ const Resources = {
     enemy3: new ImageSource(segment3),
     enemy4: new ImageSource(segment4),
     main: new Sound(main),
-    giljo: new ImageSource(giljo)
+    giljo: new ImageSource(giljo),
+    bg1: new ImageSource(background1),
+    bg2: new ImageSource(background2),
+    bg3: new ImageSource(background3),
+    bg4: new ImageSource(background4),
+    bg5: new ImageSource(background5),
+    bg6: new ImageSource(background6),
+    bg7: new ImageSource(background7),
+    bg8: new ImageSource(background8),
+
 
 }
 
