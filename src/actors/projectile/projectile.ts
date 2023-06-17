@@ -12,7 +12,7 @@ export class Projectile extends Actor {
 
     public onPostUpdate(_engine: Engine, _delta: number): void {
         this.on("collisionstart", (evt)=> {
-            if (evt.other.name !="player") {
+            if (evt.other.name == "enemy") {
                 evt.other.kill()
                 this.kill();
             }

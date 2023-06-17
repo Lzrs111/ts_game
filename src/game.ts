@@ -3,6 +3,7 @@ import { Resources } from "./resources";
 import { Player } from "./actors/player/player";
 import { Enemy } from "./actors/enemy/enemy";
 import { Tile } from "./actors/background/Tile";
+import { PowerUp } from "./actors/powerup/powerup";
 
 export class Game extends Engine {
 
@@ -11,7 +12,7 @@ export class Game extends Engine {
     private _enemy: Enemy;
     private _enemies: Enemy[] = [];
     private _tiles: Tile[] = [];
-    private _numOfEnemies = 100;
+    private _numOfEnemies = 200;
     private xpLabel = new Label({
         text: 'Some text',
         pos: vec(100, 100),
@@ -21,6 +22,10 @@ export class Game extends Engine {
             unit: FontUnit.Px
         })
     });
+    private edgeX =  Math.ceil((this.canvasWidth+2048)/512)              
+    private edgeY =  Math.ceil((this.canvasHeight+2048)/512)
+    private powerUp
+    private shotTimer: Timer
     constructor() {
     super({displayMode: DisplayMode.FillScreen, suppressHiDPIScaling: true, maxFps: 60});
 
@@ -31,6 +36,32 @@ export class Game extends Engine {
         this.createBackground()
         this.add(this.xpLabel)
         const loader = new Loader(Object.values(Resources))
+
+    // 
+    //     this.input.pointers.on("move",(evt)=> {
+    //         if (evt.screenPos.x > this.halfCanvasWidth) {
+    //             this._enemies.forEach(enemy => {
+    //                 enemy.pos.x-=enemy.speed
+    //             })
+    //         }  else if (evt.screenPos.x < this.halfCanvasWidth) {
+    //             this._enemies.forEach(enemy => {
+    //                 enemy.pos.x+=enemy.speed
+    //             })
+    //     }
+
+    //     if (evt.screenPos.y > this.halfCanvasHeight) {
+    //         this._enemies.forEach(enemy => {
+    //             enemy.pos.y-=enemy.speed
+    //         })
+    //     }  else if (evt.screenPos.y < this.halfCanvasWidth) {
+    //         this._enemies.forEach(enemy => {
+    //             enemy.pos.y+=enemy.speed
+    //         })
+    // }
+
+        
+    //     })
+
         return super.start(loader)
     }
 
@@ -42,14 +73,24 @@ export class Game extends Engine {
     
     //we want the player to automatically shoot projectiles in a certain interval
     public createShotTimer() {
-        const shotTimer = new Timer({repeats:true,fcn: ()=> {
+        if (this.shotTimer) {
+            this.shotTimer.stop()
+            this.shotTimer.interval = this.player._shotspeed
+            this.shotTimer.start()
+            Logger.getInstance().info(this.shotTimer)
+
+        } else {
+        this.shotTimer = new Timer({repeats:true,fcn: ()=> {
             this.player.shoot(1)
             this.player.projectiles.forEach(projectile => {
                 this.add(projectile)
             })
         },interval:this.player._shotspeed})
-        this.add(shotTimer)
-        shotTimer.start()
+        this.add(this.shotTimer)
+        this.shotTimer.start()
+        
+    
+    }
     }
 
     public createEnemy() {
@@ -89,16 +130,24 @@ export class Game extends Engine {
             }
         });
 
-        this._tiles.forEach((tile,ind) => {
-            if ((tile.pos.x < -512 || tile.pos.x > this.canvasWidth + 512) || (tile.pos.y < -512 || tile.pos.y > this.canvasHeight + 512)) {
-                Logger.getInstance().info("deleting tile", tile.pos)
-                tile.kill()
-                this._tiles.splice(ind,1)           
+
+        this.player.on("collisionstart",(evt)=> {
+            if (evt.other.name == "power") {
+                evt.other.kill()
+                this.player._shotspeed = 100;
+                this.createShotTimer()
             }
         })
 
-    // Logger.getInstance().info(this.player.projectiles)
+     
+      
     }
+
+    
+    
+
+
+        
 
 
     public get numOfEnemies() {
@@ -116,12 +165,13 @@ export class Game extends Engine {
 
 }
     public createBackground() {
+        
         let x:number = 0
-        let y: number = -512
-        for (let i = 0; i < Math.ceil((this.canvasHeight+512)/512); i++) {
-            x = -512
-            for (let j = 0; j < Math.ceil((this.canvasWidth+512)/512); j++) {
-                let tile = new Tile(x,y)
+        let y: number = -1024
+        for (let i = 0; i < this.edgeY; i++) {
+            x = -2048
+            for (let j = 0; j < this.edgeX ; j++) {
+                let tile = new Tile(x,y, this.edgeX,this.edgeY)
                 Logger.getInstance().info(x,y)
                 this._tiles.push(tile)
                 this.add(tile)
@@ -130,5 +180,10 @@ export class Game extends Engine {
             y+=512         
         }
         
+    }
+
+    public createPower() {
+        this.powerUp = new PowerUp(this.halfCanvasWidth+200,this.halfCanvasHeight+200)
+        this.add(this.powerUp)
     }
 }

@@ -8,7 +8,7 @@ export class Enemy extends Actor {
 
   private target: Player;  
   private image: ImageSource;
-  private speed: number = 5
+  public speed: number = 5
   constructor(x:number,y:number,target: Player) {  
     let image = Enemy.getRandomProperty(Resources);
     super({
@@ -17,7 +17,8 @@ export class Enemy extends Actor {
       width: image.width,
       color: new Color(255, 255, 255),
       collisionType:CollisionType.Passive,
-      z: 1
+      z: 1,
+      name: "enemy"
     });
     this.target = target
     this.image = image
@@ -71,6 +72,7 @@ export class Enemy extends Actor {
       
 
     }
+
   }
 
 

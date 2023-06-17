@@ -1,4 +1,4 @@
-import { Actor, Color, Engine, vec, Input, ImageSource,GraphicsShowOptions, Sprite, Vector } from 'excalibur';
+import { Actor, Color, Engine, vec, Input, ImageSource,GraphicsShowOptions, Sprite, Vector, Logger, CollisionType } from 'excalibur';
 import { Resources } from '../../resources';
 import { Projectile } from '../projectile/projectile';
 import { Game } from '../../game';
@@ -22,7 +22,8 @@ export class Player extends Actor {
       height: Resources.giljo.height,
       color: new Color(255, 255, 255),
       name: "player",
-      z: 1
+      z: 1,
+      collisionType:CollisionType.Passive
     });
   }
 
@@ -93,6 +94,7 @@ export class Player extends Actor {
     this._sprite = Resources.giljoR.toSprite()
     this.graphics.use(this._sprite)
   }
+  
   
 
 

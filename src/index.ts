@@ -11,4 +11,5 @@ game.start().then( ()=> {
     game.createPlayer()
     game.createEnemies()
     game.createShotTimer()
+    game.createPower()
 })

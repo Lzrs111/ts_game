@@ -7,7 +7,7 @@ import segment2 from "./images/booba2.png"
 import segment3 from "./images/booba3.png"
 import segment4 from "./images/booba4.png"
 import sengula from "./images/sengula.png";
-import main from "./sounds/explo.mp3";
+import main from "./sounds/main.mp3";
 import giljo from "./images/giljo.png"
 import background1 from "./images/Small 512x512/Blue Nebula/Blue Nebula 1 - 512x512.png"
 import background2 from "./images/Small 512x512/Blue Nebula/Blue Nebula 2 - 512x512.png"
@@ -17,6 +17,7 @@ import background5 from "./images/Small 512x512/Blue Nebula/Blue Nebula 5 - 512x
 import background6 from "./images/Small 512x512/Blue Nebula/Blue Nebula 6 - 512x512.png"
 import background7 from "./images/Small 512x512/Blue Nebula/Blue Nebula 7 - 512x512.png"
 import background8 from "./images/Small 512x512/Blue Nebula/Blue Nebula 8 - 512x512.png"
+import speed from "./images/das.png"
 
 
 /**
@@ -42,6 +43,7 @@ const Resources = {
     bg6: new ImageSource(background6),
     bg7: new ImageSource(background7),
     bg8: new ImageSource(background8),
+    powerUp_speed: new ImageSource(speed)
 
 
 }
