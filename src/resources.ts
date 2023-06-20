@@ -18,6 +18,8 @@ import background6 from "./images/Small 512x512/Blue Nebula/Blue Nebula 6 - 512x
 import background7 from "./images/Small 512x512/Blue Nebula/Blue Nebula 7 - 512x512.png"
 import background8 from "./images/Small 512x512/Blue Nebula/Blue Nebula 8 - 512x512.png"
 import speed from "./images/das.png"
+import cat from "./images/projectile_placeholder.png"
+import ante from "./images/ante.png"
 
 
 /**
@@ -43,8 +45,9 @@ const Resources = {
     bg6: new ImageSource(background6),
     bg7: new ImageSource(background7),
     bg8: new ImageSource(background8),
-    powerUp_speed: new ImageSource(speed)
-
+    powerUp_speed: new ImageSource(speed),
+    cat: new ImageSource(cat),
+    ante: new ImageSource(ante)
 
 }
 

@@ -1,20 +1,25 @@
-import { Actor, Color, Engine, vec, Input, ImageSource,GraphicsShowOptions, Sprite, Vector, Logger, CollisionType } from 'excalibur';
+import { Actor, Color, Engine, vec, Input, ImageSource,GraphicsShowOptions, Sprite, Vector, Logger, CollisionType,RotationType, Timer } from 'excalibur';
 import { Resources } from '../../resources';
 import { Projectile } from '../projectile/projectile';
 import { Game } from '../../game';
 import {Direction} from "./direction"
 import { Weapon } from '../weapon/weapon';
+import { PowerUp, powerUpType } from '../powerup/powerup';
+import { ProjectileWrapper } from '../projectile/projectileWrapper';
+import { Ante } from '../projectile/ante';
 
 export class Player extends Actor {
   private _sprite: Sprite;
   private _orientation: Direction = Direction.Right
-  private _graphic: ImageSource;
-  private _projectiles: Projectile[] = [];
+  private _numOfProjectiles: number = 1
+  private _projectiles: ProjectileWrapper[] = [];
   private _projectileSpeed: number = 1000;
-  public _shotspeed: number = 300;
+  public _shotspeed: number = 500;
   public weapon: Weapon = new Weapon(vec(100,100))
   private _xp: number = 0
-  private _level: number = 1
+  public _level: number = 1
+  private xpToLevel =  50
+  private colliding: boolean = false
   constructor(x: number,y: number) {
     super({
       pos: vec(x,y),
@@ -40,6 +45,40 @@ export class Player extends Actor {
 
 
   public update(engine, delta) {
+
+     this.on("collisionstart",(evt)=> {
+            if (!this.colliding && evt.other instanceof PowerUp) {
+              this.colliding = true
+              evt.other.kill();
+
+
+              if (evt.other.name == "speed") {
+              this._shotspeed -= this._shotspeed*0.1
+              engine.createShotTimer()    
+              }else if (evt.other.name == "projectile") {
+                if (this._numOfProjectiles <3) {
+                  this._numOfProjectiles +=1
+                }
+              } else if (evt.other.name == "floater") {
+                let temp = new Ante(engine.halfCanvasWidth,engine.halfCanvasHeight+200)
+                engine.add(temp)
+                temp.moveTimer = new Timer({repeats: true, fcn: ()=> {
+                  temp.move()
+              }, interval: temp.timerInterval})
+              engine.add(temp.moveTimer)
+              temp.moveTimer.start()
+              }
+
+              else if (evt.other.name == "enemy")
+                this.actions.blink(50,50,10)
+            }})
+
+    this.on("collisionend", ()=> {
+      this.colliding = false
+    })
+             
+
+
     if (
       engine.input.keyboard.isHeld(Input.Keys.W) ||
       engine.input.keyboard.isHeld(Input.Keys.Up)
@@ -86,9 +125,7 @@ export class Player extends Actor {
 
     }
 
-    if (this.xp % 100 == 0 ) {
-      this._shotspeed-=10
-    }
+   
   }
   onInitialize() {
     this._sprite = Resources.giljoR.toSprite()
@@ -99,12 +136,18 @@ export class Player extends Actor {
 
 
 
-  public shoot(num: number) {
-    let first = new Projectile(this.determineProjectileOrientation(),this.pos.x,this.pos.y)
-    this.projectiles.push(first)
+  public shoot(game: Game) {
+    let temp = new ProjectileWrapper(this._orientation,this._numOfProjectiles,this.pos.x,this.pos.y)
+    temp.makeProjectile()
+    this.projectiles.push(temp)
+    this.projectiles.forEach(element => {
+      element._projectiles.forEach(projectile => {
+        game.add(projectile)
+      })
+    })
   }
 
-  public get projectiles() {
+  public get projectiles(): ProjectileWrapper[] {
     return this._projectiles
   }
 
@@ -112,26 +155,30 @@ export class Player extends Actor {
     this._orientation = orient
   }
 
+  public get orientation() {
+    return this._orientation
+  }
+
   // public flip() {
   //   this._sprite.flipHorizontal = !this._sprite.flipHorizontal
   //   this.graphics.use(this._sprite)
   // }
 
-  public determineProjectileOrientation():Vector {
+  // public determineProjectileOrientation():Vector {
 
-    switch (this._orientation) {
-      case Direction.Up:
-        return vec(0,-this._projectileSpeed)
-      case Direction.Down:
-        return vec(0,this._projectileSpeed)
-      case Direction.Left:
-        return vec(-this._projectileSpeed,0)
-      case Direction.Right:
-        return vec(this._projectileSpeed,0)
-      default:
-    }
+  //   switch (this._orientation) {
+  //     case Direction.Up:
+  //       return vec(0,-this._projectileSpeed)
+  //     case Direction.Down:
+  //       return vec(0,this._projectileSpeed)
+  //     case Direction.Left:
+  //       return vec(-this._projectileSpeed,0)
+  //     case Direction.Right:
+  //       return vec(this._projectileSpeed,0)
+  //     default:
+  //   }
 
-  }
+  // }
 
   public updateSprite() {
     
@@ -151,6 +198,21 @@ export class Player extends Actor {
 
   this.graphics.use(this._sprite)
   }
+
+  public checkIflevel() {
+    if (this.xp == this.xpToLevel) {
+      this._level+=1;
+      this.updateXpToLevel()
+      return true
+    }
+    return false
+  }
+
+
+  public updateXpToLevel() {
+    this.xpToLevel = this.xpToLevel * ((1-Math.pow(2,this._level))/(1-2))
+  }
+
 
   
 

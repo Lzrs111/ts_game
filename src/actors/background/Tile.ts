@@ -16,7 +16,7 @@ export class Tile extends Actor {
 
     onInitialize(_engine: Engine): void {
       
-      this._sprite = Tile.getRandomProperty(Resources).toSprite()
+      this._sprite = Resources.bg4.toSprite()
       this.graphics.use(this._sprite)  
     }
 
@@ -47,7 +47,6 @@ export class Tile extends Actor {
         ) {
           this.pos.y -=this.speed;
           if (this.pos.y < -1024) {
-            Logger.getInstance().info(this.tilesInColumn)
             this.pos.y = ((this.tilesInColumn/2)*512) - this.speed
           }
         }

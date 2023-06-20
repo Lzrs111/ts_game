@@ -4,6 +4,7 @@ import { Resources} from './resources';
 import { Game } from './game';
 
 
+
 const game = new Game();
 
 game.start().then( ()=> {
@@ -11,5 +12,6 @@ game.start().then( ()=> {
     game.createPlayer()
     game.createEnemies()
     game.createShotTimer()
-    game.createPower()
+    game.createEnemyTimer()
+    game.createBackground() 
 })
