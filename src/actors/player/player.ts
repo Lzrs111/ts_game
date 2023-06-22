@@ -1,4 +1,4 @@
-import { Actor, Color, Engine, vec, Input, ImageSource,GraphicsShowOptions, Sprite, Vector, Logger, CollisionType,RotationType, Timer } from 'excalibur';
+import { Actor, Color, Engine, vec, Input, ImageSource,GraphicsShowOptions, Sprite, Vector, Logger, CollisionType,RotationType, Timer,Scene } from 'excalibur';
 import { Resources } from '../../resources';
 import { Projectile } from '../projectile/projectile';
 import { Game } from '../../game';
@@ -15,7 +15,7 @@ export class Player extends Actor {
   private _projectiles: ProjectileWrapper[] = [];
   private _projectileSpeed: number = 1000;
   public _shotspeed: number = 500;
-  public weapon: Weapon = new Weapon(vec(100,100))
+  public weapons: any[] = [];
   private _xp: number = 0
   public _level: number = 1
   private xpToLevel =  50
@@ -54,7 +54,8 @@ export class Player extends Actor {
 
               if (evt.other.name == "speed") {
               this._shotspeed -= this._shotspeed*0.1
-              engine.createShotTimer()    
+              this.emit("timer",{})
+              
               }else if (evt.other.name == "projectile") {
                 if (this._numOfProjectiles <3) {
                   this._numOfProjectiles +=1
@@ -136,13 +137,13 @@ export class Player extends Actor {
 
 
 
-  public shoot(game: Game) {
+  public shoot(scene: Scene) {
     let temp = new ProjectileWrapper(this._orientation,this._numOfProjectiles,this.pos.x,this.pos.y)
     temp.makeProjectile()
     this.projectiles.push(temp)
     this.projectiles.forEach(element => {
       element._projectiles.forEach(projectile => {
-        game.add(projectile)
+        scene.add(projectile)
       })
     })
   }
@@ -214,6 +215,16 @@ export class Player extends Actor {
   }
 
 
+  public addWeapon(weapon) {
+    weapon.createShotTimer()
+    this.weapons.push(weapon)
+  }
+
+  public shootW() {
+    this.weapons.forEach(weapon => {
+
+    })
+  }
   
 
  
