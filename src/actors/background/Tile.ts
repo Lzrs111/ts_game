@@ -16,7 +16,7 @@ export class Tile extends Actor {
 
     onInitialize(_engine: Engine): void {
       
-      this._sprite = Resources.bg4.toSprite()
+      this._sprite = Resources.bg8.toSprite()
       this.graphics.use(this._sprite)  
     }
 

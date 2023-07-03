@@ -1,5 +1,6 @@
 import { Actor, Color, Engine, vec, Input,Logger, CollisionType, ImageSource, Sprite } from 'excalibur';
 import { Resources } from '../../resources';
+import { Player } from '../player/player';
 
 
  export enum powerUpType {
@@ -11,18 +12,18 @@ import { Resources } from '../../resources';
 
 export class PowerUp extends Actor { 
     private image: ImageSource;
-    private speed: number = 5;
-    private type: powerUpType
-    constructor(x:number,y:number) {  
-      let type = PowerUp.determineType()
+    private speed: number = 3;
+    private type: powerUpType;
+    public colliding = false
+    constructor(x:number,y:number, type: powerUpType) {  
       let image = PowerUp.imageType(type)
       super({
         pos: vec(x,y),
         height: image.height,
         width: image.width,
         color: new Color(255, 255, 255),
-        collisionType:CollisionType.Active,
-        z: 1,
+        collisionType:CollisionType.Passive,
+        z: 2,
         name: PowerUp.setName(type)
       });
       this.image = image
@@ -76,6 +77,16 @@ export class PowerUp extends Actor {
     }
 
     public update(engine, delta) {
+
+        this.on("collisionstart", (evt)=> {
+          if (!this.colliding && evt.other instanceof Player) {
+          this.colliding = true
+           evt.other.xp +=2
+           Resources.coin.play(1)
+           this.kill() 
+          }
+        })
+      
         if (
           engine.input.keyboard.isHeld(Input.Keys.W) ||
           engine.input.keyboard.isHeld(Input.Keys.Up)

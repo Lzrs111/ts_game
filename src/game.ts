@@ -6,19 +6,20 @@ import { Tile } from "./actors/background/Tile";
 import { PowerUp } from "./actors/powerup/powerup";
 import { Direction } from "./actors/player/direction";
 import { MainScene } from "./scenes/level-one/mainscene";
+import { LoadScreen } from "./loader";
 
 export class Game extends Engine {
 
 
   
     constructor() {
-    super({displayMode: DisplayMode.FillScreen, suppressHiDPIScaling: true, maxFps: 60});
+    super({displayMode: DisplayMode.FillScreen, suppressHiDPIScaling: true});
 
     }
 
     public start() {
 
-    const loader = new Loader(Object.values(Resources)) 
+    const loader = new LoadScreen(Object.values(Resources)) 
     return super.start(loader)
       
     }

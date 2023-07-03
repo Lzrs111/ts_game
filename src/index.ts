@@ -14,4 +14,5 @@ game.start().then( ()=> {
     game.add("mainscene", new MainScene())
     game.add("pause",new Pause())
     game.goToScene("mainscene")
+    Resources.main.play(0.2)
 })

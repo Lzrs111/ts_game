@@ -3,23 +3,27 @@ import { Resources } from '../../resources';
 import { Projectile } from '../projectile/projectile';
 import { Game } from '../../game';
 import {Direction} from "./direction"
-import { Weapon } from '../weapon/weapon';
 import { PowerUp, powerUpType } from '../powerup/powerup';
 import { ProjectileWrapper } from '../projectile/projectileWrapper';
 import { Ante } from '../projectile/ante';
+import { Shuriken } from '../projectile/shuriken';
+import { Pause } from '../../scenes/level-one/pause';
+import { MainScene } from '../../scenes/level-one/mainscene';
+import { levels } from './levels';
+import { Enemy } from '../enemy/enemy';
+import { HpBar } from './healthBar';
 
 export class Player extends Actor {
   private _sprite: Sprite;
   private _orientation: Direction = Direction.Right
-  private _numOfProjectiles: number = 1
   private _projectiles: ProjectileWrapper[] = [];
-  private _projectileSpeed: number = 1000;
-  public _shotspeed: number = 500;
-  public weapons: any[] = [];
-  private _xp: number = 0
+  public xp: number = 0
   public _level: number = 1
-  private xpToLevel =  50
+  private xpToLevel = levels[this._level] 
   private colliding: boolean = false
+  public weapons: any[] = []
+  public hp: number = 100
+  public hpBar: HpBar
   constructor(x: number,y: number) {
     super({
       pos: vec(x,y),
@@ -27,19 +31,13 @@ export class Player extends Actor {
       height: Resources.giljo.height,
       color: new Color(255, 255, 255),
       name: "player",
-      z: 1,
+      z: 2,
       collisionType:CollisionType.Passive
     });
   }
 
 
-  public get xp() {
-    return this._xp
-  }
-
-  public set xp(num: number) {
-    this._xp +=num 
-  }
+  
 
   
 
@@ -47,33 +45,15 @@ export class Player extends Actor {
   public update(engine, delta) {
 
      this.on("collisionstart",(evt)=> {
-            if (!this.colliding && evt.other instanceof PowerUp) {
-              this.colliding = true
-              evt.other.kill();
-
-
-              if (evt.other.name == "speed") {
-              this._shotspeed -= this._shotspeed*0.1
-              this.emit("timer",{})
-              
-              }else if (evt.other.name == "projectile") {
-                if (this._numOfProjectiles <3) {
-                  this._numOfProjectiles +=1
-                }
-              } else if (evt.other.name == "floater") {
-                let temp = new Ante(engine.halfCanvasWidth,engine.halfCanvasHeight+200)
-                engine.add(temp)
-                temp.moveTimer = new Timer({repeats: true, fcn: ()=> {
-                  temp.move()
-              }, interval: temp.timerInterval})
-              engine.add(temp.moveTimer)
-              temp.moveTimer.start()
-              }
-
-              else if (evt.other.name == "enemy")
-                this.actions.blink(50,50,10)
-            }})
-
+          
+      if (!this.colliding) {
+      this.colliding = true
+      if (evt.other instanceof Enemy) {
+        this.actions.blink(50,50,10)
+        this.takeDamage(evt.other.damage)
+       }     
+      }
+     })
     this.on("collisionend", ()=> {
       this.colliding = false
     })
@@ -126,28 +106,34 @@ export class Player extends Actor {
 
     }
 
+    this.weapons.forEach(element => {
+      if (element instanceof ProjectileWrapper)
+      element._orientation = this._orientation
+    })
+
    
   }
   onInitialize() {
     this._sprite = Resources.giljoR.toSprite()
     this.graphics.use(this._sprite)
-  }
-  
-  
+    // this.weapons.push(new ProjectileWrapper(this.orientation,this.pos.x,this.pos.y,this.scene))
+    // this.scene.add(this.weapons[0])
 
-
-
-  public shoot(scene: Scene) {
-    let temp = new ProjectileWrapper(this._orientation,this._numOfProjectiles,this.pos.x,this.pos.y)
-    temp.makeProjectile()
-    this.projectiles.push(temp)
-    this.projectiles.forEach(element => {
-      element._projectiles.forEach(projectile => {
-        scene.add(projectile)
-      })
+    // this.weapons.push(new Shuriken(this.pos.x,this.pos.y))
+    // this.weapons.push(new Ante(this.pos.x,this.pos.y))
+    Logger.getInstance().info(this.pos.x,this.pos.y)
+    this.weapons.push(new ProjectileWrapper(this._orientation,this.pos.x,this.pos.y))
+    this.weapons.forEach(weapon => {
+      this.scene.add(weapon)
     })
-  }
 
+    this.hpBar = new HpBar
+    this.addChild(this.hpBar)
+
+  }
+ 
+  
+  
   public get projectiles(): ProjectileWrapper[] {
     return this._projectiles
   }
@@ -160,26 +146,7 @@ export class Player extends Actor {
     return this._orientation
   }
 
-  // public flip() {
-  //   this._sprite.flipHorizontal = !this._sprite.flipHorizontal
-  //   this.graphics.use(this._sprite)
-  // }
 
-  // public determineProjectileOrientation():Vector {
-
-  //   switch (this._orientation) {
-  //     case Direction.Up:
-  //       return vec(0,-this._projectileSpeed)
-  //     case Direction.Down:
-  //       return vec(0,this._projectileSpeed)
-  //     case Direction.Left:
-  //       return vec(-this._projectileSpeed,0)
-  //     case Direction.Right:
-  //       return vec(this._projectileSpeed,0)
-  //     default:
-  //   }
-
-  // }
 
   public updateSprite() {
     
@@ -201,8 +168,9 @@ export class Player extends Actor {
   }
 
   public checkIflevel() {
-    if (this.xp == this.xpToLevel) {
+    if (this.xp >= this.xpToLevel) {
       this._level+=1;
+      this.xp = this.xp - this.xpToLevel
       this.updateXpToLevel()
       return true
     }
@@ -211,20 +179,26 @@ export class Player extends Actor {
 
 
   public updateXpToLevel() {
-    this.xpToLevel = this.xpToLevel * ((1-Math.pow(2,this._level))/(1-2))
+    this.xpToLevel = levels[this._level]
   }
 
 
   public addWeapon(weapon) {
-    weapon.createShotTimer()
     this.weapons.push(weapon)
+    this.scene.add(weapon)
+    
   }
 
-  public shootW() {
-    this.weapons.forEach(weapon => {
-
-    })
+  public xpPercentage() {
+    return (this.xp/this.xpToLevel)*100
   }
+
+  public takeDamage(damage) {
+    this.hp -=damage
+    this.hpBar.currentHp = this.hp
+  }
+
+
   
 
  

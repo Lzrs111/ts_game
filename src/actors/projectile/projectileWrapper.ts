@@ -1,140 +1,93 @@
-import { Actor,CollisionType,Engine,Vector,vec,Logger } from "excalibur";
+import { Actor,CollisionType,Engine,Vector,vec,Logger, Timer } from "excalibur";
 import { Resources } from "../../resources";
 import { Projectile } from "./projectile";
 import { Direction } from "../player/direction";
+import { weapons } from "./weaponLevelinfo";
 
-export class ProjectileWrapper {
+export class ProjectileWrapper extends Actor {
     
     public _projectiles: Projectile[] = [];
     private x: number
     private y: number
-    private _orientation: Direction = Direction.Right
-    private _numOfProjectiles
-    constructor(orientation, number, x,y) {
+    public _orientation: Direction = Direction.Right
+    private _numOfProjectiles: number = 1
+    public shotTimer: Timer
+    public damage: number = 30
+    public attackSpeed: number = 500
+    public projectileSpeed: number = 1000
+    public level = 1
+
+    constructor(orientation, x,y) {
+        super({name: "Blaster"})
         this._orientation = orientation
         this.x = x
         this.y = y
-        this._numOfProjectiles = number
+    }
+
+    
+    public onInitialize(_engine: Engine): void {
+        this.createShotTimer()
     }
 
     public makeProjectile() {
-        let first;
-        let second;
-        let third;
-        if (this._orientation == Direction.Down) {
-           
-            switch (this._numOfProjectiles) {
-                case 1:
-                default:
-                    first = new Projectile(vec(0,1000),this.x,this.y)
-                    this._projectiles.push(first)
+        let vector: Vector
+        switch (this._orientation) {
+            case Direction.Right:
+                vector = Vector.Right
                 break;
-
-                case 2:
-                    first = new Projectile(vec(0,1000),this.x+30,this.y+30)
-                    second = new Projectile(vec(0,1000),this.x-30,this.y-30)
-                    this._projectiles.push(first)
-                    this._projectiles.push(second)
-
+            case Direction.Up:
+                vector = Vector.Up
+                break
+            case Direction.Down:
+                vector = Vector.Down
+                break
+            case Direction.Left:
+                vector = Vector.Left
+                break
+            default:
                 break;
-                
-                case 3:
-                    first = new Projectile(vec(0,1000),this.x,this.y)
-                    second = new Projectile(vec(1000,1000),this.x,this.y)
-                    third = new Projectile(vec(-1000,1000),this.x,this.y)
-                    this._projectiles.push(first)
-                    this._projectiles.push(second)
-                    this._projectiles.push(third)
-                break;
-            
-                
-            }
-
-        } else if (this._orientation == Direction.Up) {
-
-                switch (this._numOfProjectiles) {
-                    case 1:
-                    default:
-                        first = new Projectile(vec(0,-1000),this.x,this.y)
-                        this._projectiles.push(first)
-                    
-                    break;
-
-                    case 2:
-                        first = new Projectile(vec(0,-1000),this.x+30,this.y+30)
-                        second = new Projectile(vec(0,-1000),this.x-30,this.y-30)
-                        this._projectiles.push(first)
-                        this._projectiles.push(second)
-                        
-                    break;
-                    
-                    case 3:
-                        first = new Projectile(vec(0,-1000),this.x,this.y)
-                        second = new Projectile(vec(1000,-1000),this.x,this.y)
-                        third = new Projectile(vec(-1000,-1000),this.x,this.y)
-                        this._projectiles.push(first)
-                        this._projectiles.push(second)
-                        this._projectiles.push(third)
-                    break;
-                }
-
-
-        }else if (this._orientation == Direction.Right) {
-
-            switch (this._numOfProjectiles) {
-                case 1:
-                default:
-                    first = new Projectile(vec(1000,0),this.x,this.y)
-                    this._projectiles.push(first)
-                        
-                break;
-
-                case 2:
-                    first = new Projectile(vec(1000,0),this.x+30,this.y+30)
-                    second = new Projectile(vec(1000,0),this.x-30,this.y-30)
-                    this._projectiles.push(first)
-                    this._projectiles.push(second)
-                break;
-                
-                case 3:
-                    first = new Projectile(vec(1000,0),this.x,this.y)
-                    second = new Projectile(vec(1000,1000),this.x,this.y)
-                    third = new Projectile(vec(1000,-1000),this.x,this.y)
-                    this._projectiles.push(first)
-                    this._projectiles.push(second)
-                    this._projectiles.push(third)
-                break;
-            }
-            
-        }else if (this._orientation == Direction.Left) {
-            switch (this._numOfProjectiles) {
-                case 1:
-                default:
-                    first = new Projectile(vec(-1000,0),this.x,this.y)
-                    this._projectiles.push(first)
-                    
-                break;
-
-                case 2:
-                    first = new Projectile(vec(-1000,0),this.x+30,this.y+30)
-                    second = new Projectile(vec(-1000,0),this.x-30,this.y-30)
-                    this._projectiles.push(first)
-                    this._projectiles.push(second)
-                break;
-                
-                case 3:
-                    first = new Projectile(vec(-1000,0),this.x,this.y)
-                    second = new Projectile(vec(-1000,1000),this.x,this.y)
-                    third = new Projectile(vec(-1000,-1000),this.x,this.y)
-                    this._projectiles.push(first)
-                    this._projectiles.push(second)
-                    this._projectiles.push(third)
-                break;
-            }
         }
-
+        vector = vec(vector.x*1000,vector.y*1000)
+        this._projectiles.push(new Projectile(vector,this.x,this.y,this.damage))
 
     }
+
+    public update(engine: Engine, delta: number): void {
+        this._projectiles.forEach((element,index) => {
+            if (element.isKilled() || element.isOffScreen) {
+                this._projectiles.splice(index,1)
+            }
+        });
+    }
+
+
+    public createShotTimer() {
+
+        if (this.shotTimer) {
+            this.scene.timers.forEach(timer => {
+                if (timer === this.shotTimer)
+                    this.scene.removeTimer(timer)
+            })
+        }
+        let timer = new Timer({repeats: true,fcn: ()=> {
+            this.makeProjectile()
+            this._projectiles.forEach(element => {
+                this.scene.add(element)
+            })
+
+        }, interval: this.attackSpeed})
+        this.shotTimer = timer
+        this.scene.add(this.shotTimer)
+        this.shotTimer.start()
+    }
+
+    public levelUp() {
+        this.level +=1
+        this.damage =  weapons.Blaster.levels[this.level].damage
+        this.attackSpeed =  weapons.Blaster.levels[this.level].attackSpeed
+        this.createShotTimer()
+    }
+
 
 
 }
