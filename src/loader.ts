@@ -1,28 +1,38 @@
 import { Color, Loader, Logger,Vector,vec, Util } from "excalibur";
 import splash from "./images/boobe splash.png"
 import background from "./images/loadbackground.png"
+import  image  from "./splash";
 
 export class LoadScreen extends Loader {
-    public splashImage = new Image()
+    public splashImage = image
     public backgroundImage = new Image()
     public runOnce = true
     public stars
+    public mobile: boolean
     constructor(loadables) {
         super(loadables)
-        this.splashImage.src = splash
-        this.backgroundImage.src = background
+        if (window.innerWidth < 480) {
+            this.mobile = true
+        }
+
         this.playButtonText = "Klik za boobe"
-        this.loadingBarPosition = vec(window.innerWidth*0.125, window.innerHeight*0.85)
+        this.loadingBarPosition = this.mobile ? vec(window.innerWidth*0.125, window.innerHeight*0.75)  : vec(window.innerWidth*0.125, window.innerHeight*0.85)
         this.loadingBarColor = Color.Azure
-        this.playButtonPosition = vec(window.innerWidth*0.4, window.innerHeight*0.90)
+        this.playButtonPosition = this.mobile ? vec(window.innerWidth/2 - this._playButton.clientWidth, window.innerHeight*0.8) : vec(window.innerWidth*0.4, window.innerHeight*0.90)
         this.backgroundColor = "000000"
         this.stars = this.generateCoords(window.innerWidth,window.innerHeight)
+       
     }
     
     draw(ctx: CanvasRenderingContext2D): void {
 
        if (this._playButton) {
-         this.playButtonElement.style.backgroundColor = "#007FFF"
+        const buttonWidth = this._playButton.clientWidth;
+        const buttonHeight = this._playButton.clientHeight;
+        const screenHeight = window.visualViewport.height;
+        const screenWidth = window.visualViewport.width;
+        this._playButtonRootElement.style.left = `${screenWidth / 2 - buttonWidth / 2}px`;
+        this.playButtonElement.style.backgroundColor = "#007FFF"
        }
 
 
@@ -43,7 +53,15 @@ export class LoadScreen extends Loader {
         });
          
       
-        ctx.drawImage(this.splashImage,this.canvas.width/2 - this.splashImage.width/2,this.canvas.height/2 - this.splashImage.height/2)
+       
+
+        if (this.mobile) {
+            let width = this.splashImage.width*0.5
+            let height= this.splashImage.height*0.5
+            ctx.drawImage(this.splashImage,this.canvas.width/2 - width/2,this.canvas.height/2 - height/2,width,height)
+        } else {
+            ctx.drawImage(this.splashImage,this.canvas.width/2 - this.splashImage.width/2,this.canvas.height/2 - this.splashImage.height/2)
+        }
 
         let loadingX
         let loadingY
@@ -68,6 +86,8 @@ export class LoadScreen extends Loader {
           null,
           this.loadingBarColor
         );
+
+
     }
 
     public generateCoords(width,height) {

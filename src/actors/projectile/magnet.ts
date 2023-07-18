@@ -1,8 +1,9 @@
-import { Actor,CollisionType,Engine,Vector,vec,Logger, Timer } from "excalibur";
+import { Actor,CollisionType,Engine,Vector,vec,Logger, Timer, Color } from "excalibur";
 import { Resources } from "../../resources";
 import { Enemy } from "../enemy/enemy";
 import { weapons } from "./weaponLevelinfo";
 import { PowerUp } from "../powerup/powerup";
+import { MainScene } from "../../scenes/level-one/mainscene";
 
 
 
@@ -18,8 +19,8 @@ export class Magnet extends Actor{
         this.on("collisionstart", (evt)=> {
             if (evt.other instanceof PowerUp && !this.isColliding) {
                 this.isColliding = true
-                
-                evt.other.actions.moveTo(vec(this.scene.engine.halfCanvasWidth,this.scene.engine.halfCanvasHeight),300)
+                let scene = this.scene as MainScene
+                evt.other.actions.meet(scene.player,600)
             }
         })
 

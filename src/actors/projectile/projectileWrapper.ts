@@ -1,27 +1,30 @@
 import { Actor,CollisionType,Engine,Vector,vec,Logger, Timer } from "excalibur";
 import { Resources } from "../../resources";
 import { Projectile } from "./projectile";
-import { Direction } from "../player/direction";
 import { weapons } from "./weaponLevelinfo";
+import { MainScene } from "../../scenes/level-one/mainscene";
 
 export class ProjectileWrapper extends Actor {
     
     public _projectiles: Projectile[] = [];
-    private x: number
-    private y: number
-    public _orientation: Direction = Direction.Right
+    public x: number
+    public y: number
     private _numOfProjectiles: number = 1
     public shotTimer: Timer
-    public damage: number = 30
-    public attackSpeed: number = 500
+    public damage: number 
+    public attackSpeed: number 
     public projectileSpeed: number = 1000
     public level = 1
+    public image
 
-    constructor(orientation, x,y) {
-        super({name: "Blaster"})
-        this._orientation = orientation
-        this.x = x
-        this.y = y
+    constructor( x,y,name,info) {
+        super({name: name })
+        this.pos.x = x
+        this.pos.y = y
+        this.damage = info["levels"][this.level]["damage"]
+        this.image = info["image"]
+        this.attackSpeed = info["levels"][this.level]["attackSpeed"]
+        this.projectileSpeed = info["levels"][this.level]["projectileSpeed"]
     }
 
     
@@ -30,25 +33,10 @@ export class ProjectileWrapper extends Actor {
     }
 
     public makeProjectile() {
-        let vector: Vector
-        switch (this._orientation) {
-            case Direction.Right:
-                vector = Vector.Right
-                break;
-            case Direction.Up:
-                vector = Vector.Up
-                break
-            case Direction.Down:
-                vector = Vector.Down
-                break
-            case Direction.Left:
-                vector = Vector.Left
-                break
-            default:
-                break;
-        }
-        vector = vec(vector.x*1000,vector.y*1000)
-        this._projectiles.push(new Projectile(vector,this.x,this.y,this.damage))
+        let scene = this.scene as MainScene
+        let x = Math.cos(scene.player.angle)*-this.projectileSpeed
+        let y = Math.sin(scene.player.angle)*-this.projectileSpeed
+        this._projectiles.push(new Projectile(vec(x,y),this.pos.x,this.pos.y,this.damage, this.image, this.name))
 
     }
 
@@ -82,6 +70,7 @@ export class ProjectileWrapper extends Actor {
     }
 
     public levelUp() {
+        this.logger.info("o")
         this.level +=1
         this.damage =  weapons.Blaster.levels[this.level].damage
         this.attackSpeed =  weapons.Blaster.levels[this.level].attackSpeed

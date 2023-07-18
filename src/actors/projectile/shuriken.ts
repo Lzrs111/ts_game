@@ -1,62 +1,80 @@
-import { Actor,CollisionType,Engine,Vector,vec,Logger, Timer, RotationType } from "excalibur";
+import { Actor,CollisionType,Engine,Vector,vec,Logger, Timer, RotationType, ActionSequence, ParallelActions } from "excalibur";
 import { Resources } from "../../resources";
 import { Ante } from "./ante";
 import { weapons } from "./weaponLevelinfo";
+import { MainScene } from "../../scenes/level-one/mainscene";
+import { Projectile } from "./projectile";
+import { ProjectileWrapper } from "./projectileWrapper";
+import { Player } from "../player/player";
+import { Enemy } from "../enemy/enemy";
+import { Weapons } from "../../scenes/level-one/ui";
 
 
 
-export class Shuriken extends Ante{
-    public t = Math.PI/2
-    public steps;
-    public _scale: number
-    public centerX: number
-    public centerY: number
-    public angle: number = 2*Math.PI
+export class Shuriken extends ProjectileWrapper{
+    public numberOfProjectiles:number = 1
     constructor(x,y) {
-        super(x,y,"Shuriken")
-        this.centerX = x
-        this.centerY = y
-
+        super(x,y,"Shuriken",weapons["Shuriken"])
     }
 
-    public onInitialize(_engine: Engine): void {
-        this._scale = _engine.canvasHeight/2
-        this.damage = weapons.Shuriken.levels[1].damage
-        this.steps = weapons.Shuriken.levels[1].steps
-        this.graphics.use(Resources.tangice.toSprite())
-        this.createShotTimer()
-       
+    public makeProjectile(): void {
+ 
+        let scene = this.scene as MainScene
+        let enemies = this.scene.actors.filter((val)=> {
+            if (val instanceof Enemy) {
+                return val
+            }
+        })
+        if (enemies.length > 0) {
+            for (let i = 0; i < this.numberOfProjectiles; i++) {
+                let target =  this.getTarget(enemies)
+                if (target instanceof Vector) {
+                    let projectile = new Projectile(Vector.Zero, scene.player.pos.x, scene.player.pos.y,this.damage,Resources.tangice, this.name)
+                    let endPoint = vec(scene.player.pos.x - (target.x - scene.player.pos.x), scene.player.pos.y - (target.y - scene.player.pos.y))
+                    this._projectiles.push(projectile)
+                    
+                    let move = new ActionSequence(projectile, ctx => {
+                        ctx.moveTo(target,this.projectileSpeed)
+                        ctx.moveTo(endPoint,this.projectileSpeed)
+                        ctx.die()
+                    })
+            
+                    let rotate = new ActionSequence(projectile, ctx => {
+                       ctx.rotateBy(Math.PI*20,Math.PI*2)
+                    })
+                    let parallel = new ParallelActions([rotate,move])
+                    projectile.actions.runAction(parallel)
+                }
+            }
+        }
     }
-    
-    public move(): void {
 
-        this.actions.rotateBy(Math.PI / 2,2*Math.PI, RotationType.CounterClockwise)
-       
-       let x = (this._scale * Math.SQRT2*Math.cos(this.t) /(1+Math.sin(this.t)*Math.sin(this.t))) 
-       let y = (this._scale*0.75 * Math.SQRT2*Math.cos(this.t) * Math.sin(this.t) /(1+Math.sin(this.t)*Math.sin(this.t))) 
+    // public getNewAngle() {
+    //     this.angle = 2*Math.PI*Math.random()
+    // }
 
-        let x_n = x* Math.cos(this.angle)-y*Math.sin(this.angle) + this.centerX
-        let y_n = x* Math.sin(this.angle)+y*Math.cos(this.angle) + this.centerY
-    
-       this.t+=Math.PI/this.steps
-
-       
-
-       if(this.t>5/2*Math.PI) {
-        this.t = Math.PI/2
-       }
-       
-       this.pos = vec(x_n,y_n)
-    }
-
-    public getNewAngle() {
-        this.angle = 2*Math.PI*Math.random()
-    }
 
     public levelUp() {
         this.level +=1
         this.damage =  weapons.Shuriken.levels[this.level].damage
-        this.steps =  weapons.Shuriken.levels[this.level].steps
+        this.attackSpeed =  weapons.Shuriken.levels[this.level].attackSpeed
+        this.numberOfProjectiles = weapons.Shuriken.levels[this.level].projectiles
+    }
+
+    public getTarget(enemies) {
+        let scene = this.scene as MainScene
+        let target
+        if (enemies.length > 0) {
+               while(true) {
+                   target = enemies[Math.floor(Math.random() * enemies.length)]
+   
+                   if (target && !target.isOffScreen) {
+                        return vec(target.pos.x,target.pos.y)
+                   } else if (target.isOffScreen) {
+                     break
+                   }
+               }
+         }
     }
 
 
