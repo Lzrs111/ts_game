@@ -38,13 +38,44 @@ export class Ante extends ProjectileWrapper{
 
         let scene = this.scene as MainScene
         this.scale = scene.scale
+        this.step = scene.mobile ? this.step*1.5 : this.step
     }
 
     public makeProjectile(): void {
-        let projectile = new Projectile(Vector.Zero,this.pos.x,this.pos.y, this.damage,this.image,this.name)
-        projectile.duration = Infinity
-        this._projectiles.push(projectile)
-        this.scene.add(projectile)
+
+        let angleDifference
+
+        switch (this.projectileNumber) {
+            case 1:
+                angleDifference = Math.PI
+                break;
+            case 2:
+                angleDifference = Math.PI
+                break;
+            case 3:
+                angleDifference = 120 * Math.PI/180
+                break;
+            case 4:
+                angleDifference = Math.PI/2 
+                break;
+            case 5:
+                angleDifference = 72 * Math.PI/180
+                break;
+            default:
+                break;
+        }
+
+        for (let i = 0; i < this.projectileNumber; i++) {
+            let projectile = new Projectile(Vector.Zero,this.pos.x,this.pos.y, this.damage,this.image,this.name)
+            projectile.t =angleDifference*i
+            projectile.pos.x = this.radius*Math.cos(projectile.t) + this.circleX
+            projectile.pos.y = this.radius*Math.sin(projectile.t) + this.circleY;
+            projectile.duration = Infinity
+            this._projectiles.push(projectile)
+            this.scene.add(projectile)
+            this.logger.info(projectile.pos)
+        }
+       
     }   
     
     public move(projectile): void {
@@ -55,10 +86,9 @@ export class Ante extends ProjectileWrapper{
         projectile.pos = vec(x,y)
 
         projectile.t+=this.step
-        if (projectile.t >= 2*Math.PI) {
-            projectile.t = 0
-        }
-
+        // if (projectile.t >= 2*Math.PI) {
+        //     projectile.t = 0
+        // }
     }
 
     public update(engine: Engine, delta: number): void {
@@ -144,13 +174,12 @@ export class Ante extends ProjectileWrapper{
         this.projectileNumber = level.levels[this.level].projectiles
         this.scale = vec(this.scale.x*level.levels[this.level].scaleMultiplier,this.scale.y*level.levels[this.level].scaleMultiplier)
 
-        if (this.projectileNumber > this._projectiles.length) {
-            this.makeProjectile()
-        }
-
         this._projectiles.forEach(pr => {
-            pr.damage = this.damage
+            pr.kill()
         })
+        this._projectiles = []
+        this.makeProjectile()
     }
+
     
 }

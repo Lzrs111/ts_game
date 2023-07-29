@@ -13,6 +13,11 @@ export class BigBlaster extends ProjectileWrapper {
         super(x,y,"BigBlaster",weapons["BigBlaster"])
     }
 
+    public onInitialize(_engine: Engine): void {
+      let scene = this.scene as MainScene
+      this.projectileSpeed = scene.mobile ? this.projectileSpeed*0.5 : this.projectileSpeed
+    }
+
     public makeProjectile(): void {
         let scene = this.scene as MainScene
         let enemies = this.scene.actors.filter((val)=> {
@@ -68,6 +73,12 @@ export class BigBlaster extends ProjectileWrapper {
                         projectile.pos.x -=projectile.offset;
                       }
                 }
+
+              this._projectiles.forEach((projectile,index) => {
+                if (projectile.isKilled()) {
+                  this._projectiles.splice(index,1)
+                }
+              })
                 
             }
         

@@ -1,8 +1,11 @@
-import { Engine, Label, Logger, ScreenElement,vec, Font, FontOptions, FontUnit, Color, Canvas, Actor, Line, Vector, CollisionType } from 'excalibur'
+import { Engine, Label, Logger, ScreenElement,vec, Font, FontOptions, FontUnit, Color, Canvas, Actor, Line, Vector, CollisionType, Text } from 'excalibur'
 import { Resources } from '../../resources'
 import { MainScene } from './mainscene'
 import { Ante } from '../../actors/projectile/ante'
 import { weapons } from '../../actors/projectile/weaponLevelinfo'
+
+
+
 
 
 export class Weapons extends ScreenElement {
@@ -10,6 +13,10 @@ export class Weapons extends ScreenElement {
     public yOffset: number
     public slots: any[] = []
     public slotXOffset: number =Resources.slot1.width + 10
+    public levelCount: ScreenElement
+    public killCount: ScreenElement
+    public levelText: Text
+    public killText: Text
     constructor() {
         super({x:0,y:0,z:10,width:Resources.slotEmpty.width*10+100,height: Resources.slot1.height,collisionType:CollisionType.PreventCollision})
     }
@@ -41,6 +48,78 @@ export class Weapons extends ScreenElement {
             this.scene.add(sl)
             this.slots.push(sl)
         }
+
+        let textSize = window.visualViewport.width <= 480 ? 18 : 24
+        
+
+        let container = new ScreenElement({
+            pos: vec(0, this.slots[0].height+5),z:30, anchor: Vector.Zero, width:this.scene.engine.canvasWidth*0.05,height:this.scene.engine.canvasHeight*0.05
+        })
+
+        this.addChild(container)
+        this.scene.add(container)
+
+        let skullIcon = new ScreenElement({
+            pos: vec(container.width*0.1, 0),z: 30, anchor: Vector.Zero
+        })
+
+        let levelLabel = new ScreenElement({
+            pos: vec(0, container.height*0.8),z: 30, anchor: Vector.Zero
+        })
+
+        let text =  new Text({
+            text: "Lvl",
+            font: new Font({
+              family: 'impact',
+              size: textSize,
+              unit: FontUnit.Px,
+              color: Color.fromHex("#FF007F"),
+          })
+        })
+
+
+    
+        skullIcon.graphics.use(Resources.lubanja.toSprite())
+        levelLabel.graphics.use(text)
+
+        this.killCount = new ScreenElement({
+            pos: vec(scene.mobile ?container.width*1.25 : container.width*0.5, container.height*0.35),z: 30, anchor: Vector.Zero
+        })
+        this.levelCount = new ScreenElement({
+            pos: vec(scene.mobile ?container.width*1.25 : container.width*0.5, container.height*0.8), z:30, anchor: Vector.Zero
+        })
+        this.levelText = new Text({
+            text: "1",
+            font: new Font({
+              family: 'impact',
+              size: textSize,
+              unit: FontUnit.Px,
+              color: Color.fromHex("#FF007F")
+          })
+        })
+
+        this.killText = new Text({
+            text: "0",
+            font: new Font({
+              family: 'impact',
+              size: textSize,
+              unit: FontUnit.Px,
+              color: Color.fromHex("#FF007F")
+          })
+        })
+
+
+
+        this.killCount.graphics.use(this.killText)
+        this.levelCount.graphics.use(this.levelText)
+        container.addChild(this.killCount)
+        container.addChild(this.levelCount)
+        container.addChild(skullIcon)
+        container.addChild(levelLabel)
+        this.scene.add(levelLabel)
+        this.scene.add(skullIcon)
+        this.scene.add(this.levelCount)
+        this.scene.add(this.killCount)
         
         this.updateSlots(scene.player.weapons)
 

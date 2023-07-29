@@ -3,10 +3,10 @@ import { Resources } from '../../resources';
 import { Projectile } from '../projectile/projectile';
 import { Game } from '../../game';
 import { Player } from '../player/player';
-import { images } from './enemyImages';
 import { MainScene } from '../../scenes/level-one/mainscene';
 import { Enemy } from './enemy';
 import { enemies } from './enemydata';
+import { vector } from 'excalibur/build/dist/Util/DrawUtil';
 
 
 
@@ -15,6 +15,7 @@ export class Boss extends Enemy{
     public minions: Enemy[] = []
     public projectileDamage: number = 20
     public mobile: boolean = false
+    public line: boolean = false
     constructor(pos,target) {
         super(pos,target,enemies[6])
         
@@ -69,18 +70,34 @@ export class Boss extends Enemy{
       public moves() {
         if (this.actions.getQueue().isComplete()) {
             const condition = this.mobile ? this.scene.engine.canvasHeight : this.scene.engine.canvasWidth
-
+            let lineDimensions = this.mobile ? {height:this.scene.engine.canvasHeight*0.25, width: this.scene.engine.canvasWidth*2} : {height:this.scene.engine.canvasHeight*2, width: this.scene.engine.canvasWidth*0.25}
+            let random = Math.random()
+            //move to player
             if (this.target.pos.x > condition*0.75 || ((0 < this.target.pos.x) && this.target.pos.x  < condition*0.25)) {
-              if (Math.random() > 0.5) {
-                  this.actions.moveTo(this.target.pos,condition/2).moveTo(vec(this.scene.engine.halfCanvasWidth,this.scene.engine.halfCanvasHeight),condition*0.4)
-              } else {
-                if (this.projectiles.length == 0) {
-                  this.actions.callMethod(()=> {
-                    for (let i = 0; i < 3; i++) {
-                      this.actions.callMethod(() => {this.createProjectiles()}).delay(1500)
-                    }
-                  }).delay(300)
-                }  
+              if (random > 0.66) {
+                  this.actions.moveTo(this.target.pos,condition/2).moveTo(vec(this.scene.engine.halfCanvasWidth,this.scene.engine.halfCanvasHeight),condition*0.4).delay(1000)
+                //shoot at player 
+                } else {
+                  if (random >0.33 && this.projectiles.length == 0) {
+                    this.actions.callMethod(()=> {
+                      for (let i = 0; i < 3; i++) {
+                        this.actions.callMethod(() => {this.createProjectiles()}).delay(1500)
+                      }
+                    }).delay(1000)
+                  } else if (!this.line) {
+                    this.line = true
+                    let linePos = this.mobile ? vec(0,this.target.pos.y) : vec(this.target.pos.x,0)
+                    let line = new Actor({width: lineDimensions.width,height:lineDimensions.height,collisionType: CollisionType.Passive, color:Color.Red,pos:linePos,anchor: Vector.Half})
+                    this.scene.add(line)
+                    line.actions.blink(100,100,10).callMethod(()=> {
+                     if (line.collider.bounds.contains(this.target.pos)){
+                      this.target.takeDamage(50)
+                     }
+                    }).delay(1000).die()
+                    this.actions.delay(2000).callMethod(()=> {
+                      this.line = false
+                    })
+                  }  
               }
             
             } else {
@@ -152,7 +169,7 @@ export class Boss extends Enemy{
             
                 }
               })
-              })
+              }).delay(1000)
             
             }
 

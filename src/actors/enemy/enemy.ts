@@ -3,8 +3,8 @@ import { Resources } from '../../resources';
 import { Projectile } from '../projectile/projectile';
 import { Game } from '../../game';
 import { Player } from '../player/player';
-import { images } from './enemyImages';
 import { MainScene } from '../../scenes/level-one/mainscene';
+import { Pause } from '../../scenes/level-one/pause';
 
 
 
@@ -22,6 +22,7 @@ export class Enemy extends Actor {
   public moving: boolean = false
   public movementVector:Vector = Vector.Zero 
   public angle
+  public offscreenDistance: number = 25
   constructor(pos: Vector,target: Player,data) {  
 
     
@@ -31,7 +32,7 @@ export class Enemy extends Actor {
       height: data.image.height,
       width: data.image.width,
       color: new Color(255, 255, 255),
-      collisionType: data.image == Resources.marko ? CollisionType.Passive : CollisionType.Active,
+      collisionType: data.image == Resources.marko ? CollisionType.Passive : CollisionType.Passive,
       z: 3,
       name: "enemy"
     });
@@ -44,20 +45,15 @@ export class Enemy extends Actor {
   }
 
 
-  static  getRandomImage(): ImageSource[] {
-    const keys = Object.keys(images)
-    let random = Math.floor(Math.random() *5)
-    return [images[random].main,images[random].alternate]
-
-  }
 
   
   onInitialize(_engine: Engine) {    
     
     let scene = this.scene as MainScene
     this.scale = scene.scale
-    this.offset = scene.mobile ? 5 : 5
-    this.speed = scene.mobile ? this.speed*0.5 : this.speed
+    this.offset = scene.mobile ? 3 : 5
+    this.speed = scene.mobile ? this.speed*0.3 : this.speed
+    this.offscreenDistance = scene.mobile ? 25 : 55
 
     this.graphics.use(this.image.toSprite());
     this.actions.meet(this.target,this.speed)
@@ -77,6 +73,7 @@ export class Enemy extends Actor {
 
 
     if (this.scene instanceof MainScene && this.scene.pointerDown) {
+      this.angle = this.scene.angle
       this.pos.x += Math.cos(this.angle)*this.offset
       this.pos.y += Math.sin(this.angle)*this.offset
       
@@ -115,23 +112,48 @@ export class Enemy extends Actor {
       this.pos.x -=this.offset;
     }
 
-    if (this.pos.x > engine.canvasWidth + 100) {
-      this.pos.x = Math.floor(Math.random() * (-50+1)) -50
-    } else if (this.pos.x < -100) {
-      this.pos.x = Math.floor(Math.random()* engine.canvasWidth) + engine.canvasWidth + 50
+
+    let scene = this.scene as MainScene
+    if (this.pos.x > engine.canvasWidth + this.offscreenDistance) {
+      this.pos.x = scene.mobile ? -5 : Math.floor(Math.random() * (-this.offscreenDistance+1)) -this.offscreenDistance
+    } else if (this.pos.x < -this.offscreenDistance) {
+      this.pos.x = scene.mobile ? engine.canvasWidth +5 : Math.floor(Math.random()* engine.canvasWidth) + engine.canvasWidth + this.offscreenDistance
     }
 
-    if (this.pos.y > engine.canvasHeight + 100) {
-      this.pos.y = Math.floor(Math.random() * (-50+1)) -50
-    } else if (this.pos.y < -100) {
-      this.pos.y = Math.floor(Math.random()* engine.canvasHeight) + engine.canvasHeight + 50
+    if (this.pos.y > engine.canvasHeight + this.offscreenDistance) {
+      this.pos.y = scene.mobile ? -5 : Math.floor(Math.random() * (-this.offscreenDistance+1)) -this.offscreenDistance
+    } else if (this.pos.y < -this.offscreenDistance) {
+      this.pos.y = scene.mobile ? engine.canvasHeight+5 : Math.floor(Math.random()* engine.canvasHeight) + engine.canvasHeight + this.offscreenDistance
     }
-
+   
 
    
   }
 
-  public onPostKill(_scene: Scene<unknown>): void {
+  public onPostKill(_scene: MainScene): void {
+
+    this.logger.info(_scene.enemies.length, "BEFORE")
+    _scene.enemies = _scene.enemies.filter((val)=> {
+      return !val.isKilled()
+    })
+
+    
+    if (_scene.player._level < 35) {
+     _scene.player.xp +=4
+     if (_scene.enemies.length < _scene.numOfEnemies) {
+      _scene.spawnSingle()
+     }
+  }
+
+  _scene.weaponBar.killText.text = (parseInt(_scene.weaponBar.killText.text) + 1).toString()
+
+  if (_scene.player.checkIflevel()) {
+    _scene.weaponBar.levelText.text = (parseInt(_scene.weaponBar.levelText.text) +1).toString()
+    let pause = _scene.engine.scenes["pause"] as Pause      
+    pause.mainScene = _scene as MainScene
+    _scene.engine.goToScene("pause")
+  }
+
   }
 
   public takeDamage(damage: number): void {
@@ -144,7 +166,7 @@ export class Enemy extends Actor {
       pos: this.pos,
       font: new Font({
           family: 'impact',
-          size: this.scale == vec(0.5,0.5) ? 12 : 24,
+          size: this.scale == vec(0.5,0.5) ? 5 : 24,
           unit: FontUnit.Px,
           color: Color.Red
       }),

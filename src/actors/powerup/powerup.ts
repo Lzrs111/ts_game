@@ -19,7 +19,7 @@ export class PowerUp extends Actor {
     public moving: boolean = false
     public angle
     constructor(x:number,y:number, type: powerUpType) {  
-      let image = Resources.powerUp_speed
+      let image = type == powerUpType.Speed ?  Resources.powerUp_speed : Resources.tzeyo
       super({
         pos: vec(x,y),
         height: image.height,
@@ -28,11 +28,12 @@ export class PowerUp extends Actor {
         collisionType:CollisionType.Passive,
         z: 2,
       });
+      
       this.image = image
 
       this.type = type
-      this.xp = (this.type == powerUpType.Speed) ? 4 : 400
-      this.scale = (this.type == powerUpType.Speed) ? vec(1,1) : vec(3,3)
+      this.xp = (this.type == powerUpType.Speed) ? 4 : 0
+    
    
     }
   
@@ -46,6 +47,7 @@ export class PowerUp extends Actor {
 
        if (scene.mobile) {
          this.scale = vec(0.5,0.5)
+         this.speed = 3
        }
     }
 
@@ -53,10 +55,15 @@ export class PowerUp extends Actor {
 
         this.on("collisionstart", (evt)=> {
           if (!this.colliding && evt.other instanceof Player) {
-          this.colliding = true
-           evt.other.xp += this.xp
-           Resources.coin.play(1)
-           this.kill() 
+            if (this.type == powerUpType.Speed) {
+                this.colliding = true
+                evt.other.xp += this.xp
+                Resources.coin.play(1)
+            } else {
+              evt.other.emit("pull", {})
+            }
+            this.kill() 
+
           }
 
           // if (evt.other instanceof PowerUp) {
@@ -66,6 +73,7 @@ export class PowerUp extends Actor {
         })
 
         if (this.scene instanceof MainScene && this.scene.pointerDown) {
+          this.angle = this.scene.angle
           this.pos.x += Math.cos(this.angle)*this.speed
           this.pos.y += Math.sin(this.angle)*this.speed
           

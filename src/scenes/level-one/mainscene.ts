@@ -7,7 +7,7 @@ import { PowerUp, powerUpType } from "../../actors/powerup/powerup";
 import { Pause } from "./pause";
 import { Ante } from "../../actors/projectile/ante";
 import { Shuriken } from "../../actors/projectile/shuriken";
-import { Magnet } from "../../actors/projectile/magnet";
+//import { Magnet } from "../../actors/projectile/magnet";
 import { Weapons, Bar } from "./ui";
 import { BigBlaster } from "../../actors/projectile/bigblaster";
 import { Bouncy } from "../../actors/projectile/bouncy";
@@ -15,6 +15,7 @@ import { enemies,waves } from "../../actors/enemy/enemydata";
 import { Armor } from "../../actors/projectile/armor";
 import { HpRegen } from "../../actors/projectile/healthRegen";
 import { Boss } from "../../actors/enemy/boss";
+import { Projectile } from "../../actors/projectile/projectile";
 
 
 
@@ -32,7 +33,7 @@ export class MainScene extends Scene {
     private _enemy: Enemy;
     public enemies: Enemy[] = [];
     private _tiles: Tile[] = [];
-    private _numOfEnemies = 1
+    public numOfEnemies = 1
     private edgeX;          
     private edgeY;
     public vortex
@@ -43,6 +44,8 @@ export class MainScene extends Scene {
     public pointerDown: boolean = false
     public waveTimer: Timer
     public enemyTimer: Timer
+    public pointerCoords: Vector
+    public angle: number
     constructor() {
         super()
     }
@@ -66,47 +69,33 @@ export class MainScene extends Scene {
 
         this.engine.input.pointers.on("down",(evt)=> {
             this.pointerDown = true
+            this.pointerCoords = evt.coordinates.screenPos
             let coords = evt.coordinates
-            let angle = vec(this.engine.canvasWidth/2 - coords.screenPos.x, this.engine.canvasHeight/2 -coords.screenPos.y).toAngle()
+            this.angle = vec(this.engine.canvasWidth/2 - coords.screenPos.x, this.engine.canvasHeight/2 -coords.screenPos.y).toAngle()
             this.player.angle = vec(this.player.pos.x - coords.screenPos.x, this.player.pos.y -coords.screenPos.y).toAngle()
-            this.player.updateSprite()
-            if (this.wave < 100) {
-                this.actors.forEach(actor => {
-                    if (actor instanceof Enemy || actor instanceof Tile || actor instanceof PowerUp) {
-                        actor.moving = true
-                        actor.angle = angle
-                    }
-            
-            })    
-            }
-    })
+            this.player.updateSprite() 
+            })
+    
 
 
     this.engine.input.pointers.on("move",(evt)=> {
         let coords = evt.coordinates
          if (this.pointerDown) {
-            this.player.angle = vec(this.player.pos.x - coords.screenPos.x,this.player.pos.y - coords.screenPos.y).toAngle()
+            this.player.angle = vec(this.pointerCoords.x - coords.screenPos.x,this.pointerCoords.y - coords.screenPos.y).toAngle()
+            Logger.getInstance().info(vec(this.pointerCoords.x - coords.screenPos.x,this.pointerCoords.y - coords.screenPos.y).toAngle(), "POINTER - SCREEN")
             this.player.updateSprite()
-            if (this.wave < 100) {          
-                this.actors.forEach(actor => {
-                    if (actor instanceof Enemy || actor instanceof Tile || actor instanceof PowerUp) {
-                        if (actor.moving) {
-                            actor.angle = vec(this.engine.canvasWidth/2 - coords.screenPos.x, this.engine.canvasHeight/2 -coords.screenPos.y).toAngle()
-                        }
-                    }
-                })
+            this.angle = vec(this.pointerCoords.x - coords.screenPos.x,this.pointerCoords.y - coords.screenPos.y).toAngle()
+           
         }
-      }
-
-
 })
 
     this.engine.input.pointers.on("up",(evt)=> {
         this.pointerDown = false
-        this.actors.forEach(actor => {
-            if (actor instanceof Enemy || actor instanceof Tile || actor instanceof PowerUp) {
-              actor.moving = false
-            }})})
+        // this.actors.forEach(actor => {
+        //     if (actor instanceof Enemy || actor instanceof Tile || actor instanceof PowerUp) {
+        //       actor.moving = false
+        //     }})
+        })
         }
       
 
@@ -142,7 +131,7 @@ export class MainScene extends Scene {
             for (let i = 0; i < numberOfEnemies; i++) {
                 for (let j = 1; j <= enemyTypes; j++) {
                     if (1 - waves[this.wave]["enemies"][j] < Math.random()) {
-                        this.createEnemy(vec(this.determineSpawnSide(this.engine.canvasWidth),this.determineSpawnSide(this.engine.canvasHeight)),enemies[j])
+                        this.createEnemy(this.determineSpawnSide(),enemies[j])
                     }                
                 }
             }
@@ -204,7 +193,10 @@ export class MainScene extends Scene {
     }
 
     private spawnRandom() {
-        let numberOfEnemies = waves[this.wave].numberOfEnemies
+        let numberOfEnemies = waves[this.wave].numberOfEnemies - this.enemies.length
+        if (this.mobile) {
+            numberOfEnemies = numberOfEnemies/2
+        }
         let enemyTypes = Object.keys(waves[this.wave]["enemies"]).length
         let x      
         let y
@@ -213,7 +205,7 @@ export class MainScene extends Scene {
         for (let i = 0; i <= numberOfEnemies; i++) {
             for (let j = 1; j <= enemyTypes; j++) {
                 if (1 - waves[this.wave]["enemies"][j] < Math.random()) {
-                    this.createEnemy(vec(this.determineSpawnSide(this.engine.canvasWidth),this.determineSpawnSide(this.engine.canvasHeight)),enemies[j])
+                    this.createEnemy(this.determineSpawnSide(),enemies[j])
                 }                
             }
         }
@@ -338,10 +330,10 @@ export class MainScene extends Scene {
                 this.player.addWeapon(new Shuriken(this.player.pos.x,this.player.pos.y))
                 Logger.getInstance().info("Adding Shuriken")
                 break;
-            case "Magnet":
-                this.player.addWeapon(new Magnet(this.player.pos.x,this.player.pos.y,"Magnet"))
-                Logger.getInstance().info("Adding Magnet")
-                break;
+            // case "Magnet":
+            //     this.player.addWeapon(new Magnet(this.player.pos.x,this.player.pos.y,"Magnet"))
+            //     Logger.getInstance().info("Adding Magnet")
+            //     break;
             case "BigBlaster":
                 this.player.addWeapon(new BigBlaster(this.player.pos.x,this.player.pos.y))
                 Logger.getInstance().info("Adding BigBlast")
@@ -368,31 +360,53 @@ export class MainScene extends Scene {
     
     public onPreUpdate(_engine: Engine, _delta: number): void {
 
+        let count = 0
 
-        if (this.wave == 10) {
+        this.actors.forEach(actor => {
+            if (actor instanceof Enemy) {
+                count++
+            }
+        })
+        
+        Logger.getInstance().info(count)
+
+        if (this.player._level == 35) {
+            this.actors.forEach(actor => {
+                if (actor instanceof Enemy || actor instanceof PowerUp) {
+                    actor.kill()
+                }
+            })
+
             this.waveTimer.stop()
-            this.enemyTimer.stop()
-               if (this.enemies.length == 0) {
-                 this.wave +=1
-                 this._tiles.forEach(tile => {
-                     tile.offset = 0
-                 })
-                 this.player.altControl()
- 
-                 let playerActions = this.player.actions.easeTo(vec(_engine.canvasWidth*0.9,_engine.halfCanvasHeight),2000).toPromise()
-                 playerActions.then(() => {
-                     Resources.main.stop()
-                     Resources.whatis.play(0.5)
-                     let boss = new Boss(vec(_engine.halfCanvasWidth,_engine.halfCanvasHeight),this.player)
-                     this.enemies = []
-                     this.enemies.push(boss)
-                     this.add(boss)
-                     boss.actions.delay(2000)
-                 
-                 }
-                 )
-               }
+           // this.enemyTimer.stop()
+
+            
+            if (this.enemies.length == 0) {
+                this.player._level +=1
+                this._tiles.forEach(tile => {
+                    tile.offset = 0
+                })
+                this.player.altControl()
+
+                let playerActions = this.player.actions.easeTo(vec(_engine.canvasWidth*0.9,_engine.halfCanvasHeight),2000).toPromise()
+                playerActions.then(() => {
+                    Resources.main.stop()
+                    Resources.whatis.play(0.5)
+                    let boss = new Boss(vec(_engine.halfCanvasWidth,_engine.halfCanvasHeight),this.player)
+                    this.enemies = []
+                    this.enemies.push(boss)
+                    this.add(boss)
+                    boss.actions.delay(2000)
+                
+                }
+                )
+            }
         }
+
+       if (this.player._level <35 && this.numOfEnemies > this.enemies.length && this.wave < 10) {
+            Logger.getInstance().info("calling")
+             this.spawnSingle()
+       }
 
         if (_engine.input.keyboard.wasReleased(Input.Keys.B)) {
             _engine.screen.goFullScreen()
@@ -405,31 +419,23 @@ export class MainScene extends Scene {
 
 
 
-        if (this.player.checkIflevel()) {
-            let pause = _engine.scenes["pause"] as Pause      
-            pause.mainScene = this as MainScene
-            _engine.goToScene("pause")
-          }
+     
         
-        this.enemies.forEach((enemy,index) => {
-            if (enemy.isKilled()) {
-                this.enemies.splice(index,1)
-                if (this.player._level <= 35) {
-                    this.spawnSingle() 
-                }
-                this.createPower(enemy.pos.x, enemy.pos.y)
-                
-            }
-        })
+        // this.enemies.forEach((enemy,index) => {
+   
+        //     if (enemy.isKilled()) {
+        //         this.weaponBar.killText.text = (parseInt(this.weaponBar.killText.text) + 1).toString()
+        //         this.enemies.splice(index,1)
+        //         if (this.player._level < 35) {
+        //             this.player.xp +=4
+        //             this.spawnSingle() 
 
-        // this.actors.forEach((actor,index)=> {
-        //     if (actor instanceof Enemy && actor.isKilled()) {
-        //         this.remove(actor)
-        //         this.spawnSingle()
-        //         this.createPower(actor.pos.x, actor.pos.y)
-        //     }
-
+        //         }
+              
+        //        // this.createPower(enemy.pos.x, enemy.pos.y)    
+        //     } 
         // })
+
 
 
         
@@ -439,39 +445,6 @@ export class MainScene extends Scene {
             this.engine.goToScene('pause');
           }
 
-    
-
-
-        if (_engine.input.keyboard.wasPressed(Input.Keys.X)) {
-            this.enemies.forEach(enemy => {
-                enemy.kill()
-            })
-            this.enemies = []
-            this.waveTimer.stop()
-            this.enemyTimer.stop()
-               if (this.enemies.length == 0) {
-                 this.wave +=1
-                 this._tiles.forEach(tile => {
-                     tile.offset = 0
-                 })
-                 this.player.godMode()
-                 this.player.altControl()
-                 this.weaponBar.updateSlots(this.player.weapons)
-
- 
-                 let playerActions = this.player.actions.easeTo(vec(_engine.canvasWidth*0.9,_engine.halfCanvasHeight),2000).toPromise()
-                 playerActions.then(() => {
-                     Resources.main.stop()
-                     Resources.whatis.play(0.5)
-                     let boss = new Boss(vec(_engine.halfCanvasWidth,_engine.halfCanvasHeight),this.player)
-                     this.enemies = []
-                     this.enemies.push(boss)
-                     this.add(boss)
-                     boss.actions.delay(2000)
-                 
-                 }
-                 )
-               }          }
         
 
         // if (this.powerUps.length > 200) {
@@ -495,26 +468,47 @@ export class MainScene extends Scene {
 
 
 
-    public get numOfEnemies() {
-        return this._numOfEnemies
-    }
 
-    public determineSpawnSide(dimension) {
+
+    public determineSpawnSide(): Vector {
+
+        let x
+        let y
+        let spawnOffset = this.mobile ? 20 : 50
         if (Math.random() > 0.5) {
-            return Math.floor(Math.random() * (dimension + 1000 - dimension + 1)) + dimension;
+            if (Math.random() > 0.5) {
+                x = Math.floor(Math.random()* (this.engine.canvasWidth + spawnOffset - this.engine.canvasWidth+1 )+ this.engine.canvasWidth)
+            } else {
+               x =  Math.floor(Math.random() * (-spawnOffset + 1)) -spawnOffset;
+            }
+            y = Math.floor(Math.random() * this.engine.canvasHeight )
         } else {
-            return Math.floor(Math.random() * (dimension - dimension-1000 + 1)) + dimension-1000;
+            if (Math.random() > 0.5) {
+                y = Math.floor(Math.random()* (this.engine.canvasHeight + spawnOffset - this.engine.canvasHeight+1 )+ this.engine.canvasHeight)
+            } else {
+                y =  Math.floor(Math.random() * -spawnOffset + 1) -spawnOffset;
+            }
+            x = Math.floor(Math.random() * this.engine.canvasWidth )
+
         }
+
+        return vec(x,y)
+
+        // if (Math.random() > 0.5) {
+        //     return Math.floor(Math.random() * (dimension + 50 - dimension + 1)) + dimension;
+        // } else {
+        //     return Math.floor(Math.random() * (dimension - dimension-50 + 1)) + dimension-50;
+        // }
     }
 
    
     public createBackground() {
         
         let x:number = 0
-        let y: number = -10240
-        for (let i = 0; i < 40; i++) {
-            x = -10240
-            for (let j = 0; j < 40 ; j++) {
+        let y: number = -4096
+        for (let i = 0; i < 24; i++) {
+            x = -4096
+            for (let j = 0; j < 24 ; j++) {
                 let tile = new Tile(x,y)
                 this._tiles.push(tile)
                 this.add(tile)
@@ -525,11 +519,13 @@ export class MainScene extends Scene {
         
     }
 
-    public createPower(x,y) {
-        let powerUp = new PowerUp(x,y, powerUpType.Speed)
-        this.add(powerUp)
-        this.powerUps.push(powerUp)
-    }
+    // public createPower(x,y) {
+    //     let random = Math.random()*1000
+    //     let type = random > 998 ? powerUpType.SpeedBig : powerUpType.Speed
+    //     let powerUp = new PowerUp(x,y, type)
+    //     this.add(powerUp)
+    //     this.powerUps.push(powerUp)
+    // }
 
 
     public gameOver() {
@@ -546,6 +542,10 @@ export class MainScene extends Scene {
     }
 
     public begin() {
+
+        Resources.whatis.stop()
+        Resources.main.stop()
+        Resources.main.play(0.5)
         this.createBackground()
         this.createPlayer()
 
@@ -554,6 +554,8 @@ export class MainScene extends Scene {
         this.hpBar= new Bar(this.engine.canvas.width*0.05,this.engine.canvas.height*0.03 + 15,"hp",this.engine.canvasWidth*0.9, 10)
         this.weaponBar = new Weapons()
 
+
+        this.numOfEnemies = this.mobile? waves[this.wave].numberOfEnemies/2 : waves[this.wave].numberOfEnemies
         this.createEnemies()     
 
         this.add(this.xpBar)
@@ -561,16 +563,20 @@ export class MainScene extends Scene {
         this.add(this.hpBar)
         this.hpBar.currentNumber = this.player.hp
 
-        this.enemyTimer = new Timer({repeats:true, fcn: ()=> {
-            this.spawnSingle()
-        },interval: 10000})
-          this.add(this.enemyTimer)
-         this.enemyTimer.start()
+        // this.enemyTimer = new Timer({repeats:true, fcn: ()=> {
+        //     this.spawnSingle()
+        // },interval: 10000})
+        //   this.add(this.enemyTimer)
+        //  this.enemyTimer.start()
 
         this.waveTimer = new Timer({repeats:true, fcn: ()=> {
-            this.wave+=1
+            if (this.wave <10) {
+                this.wave+=1  
+            }
+            this.numOfEnemies = this.mobile? waves[this.wave].numberOfEnemies/2 : waves[this.wave].numberOfEnemies
+            
           //  this.createEnemies()
-            Logger.getInstance().info("wave up")
+            Logger.getInstance().info(this.numOfEnemies)
         },interval: 30000})
 
       

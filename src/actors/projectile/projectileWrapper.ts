@@ -29,14 +29,42 @@ export class ProjectileWrapper extends Actor {
 
     
     public onInitialize(_engine: Engine): void {
+        let scene = this.scene as MainScene
+        this.projectileSpeed = scene.mobile ? this.projectileSpeed*0.5 : this.projectileSpeed
         this.createShotTimer()
     }
 
     public makeProjectile() {
-        let scene = this.scene as MainScene
-        let x = Math.cos(scene.player.angle)*-this.projectileSpeed
-        let y = Math.sin(scene.player.angle)*-this.projectileSpeed
+        for (let i = 0; i < 4; i++) {
+            let x
+            let y   
+            
+            switch (i) {
+                case 0:
+                x = -0.5
+                y = -0.5  
+                break;
+                case 1:
+                x = 0.5
+                y = -0.5   
+                break;  
+                case 2:
+                x = -0.5
+                y = 0.5
+                break;
+                case 3:
+                x = 0.5
+                y = 0.5
+                break;
+                default:
+                    break;
+            }
+
+        x *=this.projectileSpeed
+        y *=this.projectileSpeed
         this._projectiles.push(new Projectile(vec(x,y),this.pos.x,this.pos.y,this.damage, this.image, this.name))
+
+       }
 
     }
 
@@ -46,6 +74,8 @@ export class ProjectileWrapper extends Actor {
                 this._projectiles.splice(index,1)
             }
         });
+
+    
     }
 
 
@@ -70,7 +100,6 @@ export class ProjectileWrapper extends Actor {
     }
 
     public levelUp() {
-        this.logger.info("o")
         this.level +=1
         this.damage =  weapons.Blaster.levels[this.level].damage
         this.attackSpeed =  weapons.Blaster.levels[this.level].attackSpeed

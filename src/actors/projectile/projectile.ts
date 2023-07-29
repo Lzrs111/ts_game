@@ -13,6 +13,7 @@ export class Projectile extends Actor {
     public offset: number = 5
     public exploding: boolean = false
     public t: number = 0
+    public initialAngle: number
     public bounces: number = 1
     public duration: number = 10000
     constructor(speedVector: Vector, x:number,y:number, damage: number, image: ImageSource,name) {
@@ -48,6 +49,9 @@ export class Projectile extends Actor {
         this.on("collisionend", (evt)=> {
          this.colliding = false
         })
+
+        
+   
     }
 
     public durationTimer() {

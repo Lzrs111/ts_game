@@ -29,7 +29,7 @@ export class Player extends Actor {
   private _projectiles: ProjectileWrapper[] = [];
   public xp: number = 0
   public _level: number = 1
-  private xpToLevel = levels[this._level] 
+  private xpToLevel = 2*levels[this._level] 
   private colliding: boolean = false
   public weapons: any[] = []
   public hp: number = 100
@@ -94,6 +94,8 @@ export class Player extends Actor {
      }
    } else {
 
+      let bounds = engine.getWorldBounds()
+
       if (
         engine.input.keyboard.isHeld(Input.Keys.W) ||
         engine.input.keyboard.isHeld(Input.Keys.Up)
@@ -102,6 +104,9 @@ export class Player extends Actor {
         this.angle = Math.PI/2
         this.updateSprite()
         this.pos.y -=this.speed
+        if (this.pos.y < bounds.top) {
+          this.pos.y +=this.speed
+        }
         let scene = this.scene as MainScene
   
       }
@@ -112,6 +117,9 @@ export class Player extends Actor {
           this.angle = -Math.PI/2
           this.updateSprite()    
           this.pos.y +=this.speed
+          if (this.pos.y > bounds.bottom) {
+            this.pos.y -=this.speed
+          }
 
 
       }
@@ -123,6 +131,9 @@ export class Player extends Actor {
           this.angle = 0
           this.updateSprite()
           this.pos.x-=this.speed
+          if (this.pos.x < bounds.left) {
+            this.pos.x +=this.speed
+          }
         // let scene = this.scene as MainScene
   
         // this.logger.info(scene.walls[3].pos)
@@ -140,6 +151,9 @@ export class Player extends Actor {
           this.angle = -Math.PI
           this.updateSprite()
           this.pos.x+=this.speed
+          if (this.pos.x > bounds.right) {
+            this.pos.x -=this.speed
+          }
         // let scene = this.scene as MainScene
 
       }
@@ -148,6 +162,10 @@ export class Player extends Actor {
         this.pos.x -= Math.cos(this.angle)*this.speed
         this.pos.y -= Math.sin(this.angle)*this.speed
       }
+
+
+
+     
 
       this.weapons.forEach(element => {        
         element.pos = this.pos 
@@ -162,7 +180,7 @@ export class Player extends Actor {
   onInitialize() {
     this._sprite = Resources.giljoR.toSprite()
     this.graphics.use(this._sprite)
-    this.weapons.push(new ProjectileWrapper(this.pos.x,this.pos.y,"Blaster",weapons["Blaster"]))
+    this.weapons.push(new ProjectileWrapper(this.pos.x,this.pos.y, "Blaster",weapons["Blaster"]))
    
 
     this.weapons.forEach(weapon => {
@@ -173,6 +191,15 @@ export class Player extends Actor {
     
     let scene = this.scene as MainScene
     this.scale = scene.scale
+
+
+    this.on("pull", (evt)=> {
+      scene.actors.forEach(actor => {
+        if (actor instanceof PowerUp) {
+          actor.actions.meet(this,300)
+        }
+      })
+    })
 
 
     this.on("collisionstart",(evt)=> {
@@ -187,6 +214,9 @@ export class Player extends Actor {
     this.on("collisionend", ()=> {
       this.colliding = false
     })
+
+  
+
 
 
   }
@@ -232,7 +262,7 @@ export class Player extends Actor {
 
   public checkIflevel() {
     if (this.xp >= this.xpToLevel) {
-      this._level+=1;
+      this._level+=1; 
       this.xp = this.xp - this.xpToLevel
       this.updateXpToLevel()
       return true
@@ -242,7 +272,7 @@ export class Player extends Actor {
 
 
   public updateXpToLevel() {
-    this.xpToLevel = levels[this._level]
+    this.xpToLevel = 2*levels[this._level]
   }
 
 

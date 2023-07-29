@@ -20,21 +20,21 @@ const enemies = {
     },
     3:{
         damage: 10,
-        speed: 130,
+        speed: 120,
         hp: 30,
         image: Resources.enemy2,
         alternate: Resources.enemy2_red
     },
     4: {
         damage: 12.5,
-        speed: 130,
+        speed: 120,
         hp: 35,
         image: Resources.enemy3,
         alternate: Resources.enemy3_red
     },
     5: {
         damage: 15,
-        speed: 130,
+        speed: 120,
         hp: 40,
         image: Resources.enemy4,
         alternate: Resources.enemy4_red
@@ -54,21 +54,21 @@ const waves = {
         enemies: {
            1: 1
         },
-        numberOfEnemies: 60,
+        numberOfEnemies: 50,
     },
     2: {
         enemies: {
             1: 0.7,
             2: 0.3
         },
-        numberOfEnemies: 60
+        numberOfEnemies: 55
     },
     3:{
         enemies: {
             1: 0.4,
             2: 0.6
         },
-        numberOfEnemies: 70
+        numberOfEnemies: 60
     },
     4: {
         enemies: {
@@ -77,7 +77,7 @@ const waves = {
             3: 0.3
             
         },
-        numberOfEnemies: 80
+        numberOfEnemies: 60
     },
     5: {
         enemies: {
@@ -86,14 +86,15 @@ const waves = {
             3: 0.35,
             4: 0.35,
         },
-        numberOfEnemies:90
+        numberOfEnemies: 60
     },
     6: {
        enemies:{ 1: 0,
         2: 0.1,
         3: 0.2,
         4: 0.6,
-        5: 0.1,}
+        5: 0.1,},
+        numberOfEnemies: 60
     },
         
     7: {
@@ -101,7 +102,9 @@ const waves = {
         2: 0,
         3: 0.25,
         4: 0.45,
-        5: 0.3,}
+        5: 0.3,},
+        numberOfEnemies: 60
+
 
     },
     8: {
@@ -109,7 +112,8 @@ const waves = {
         2: 0,
         3: 0.05,
         4: 0.35,
-        5: 0.6,}
+        5: 0.6,},
+        numberOfEnemies: 60
 
     },
     9: {
@@ -117,14 +121,16 @@ const waves = {
         2: 0,
         3: 0,
         4: 0.5,
-        5: 0.5,}
-    },
+        5: 0.5},
+        numberOfEnemies: 60    },
     10: {
-      enemies: {  1: 0,
+      enemies: {  
+        1: 0,
         2: 0,
         3: 0,
         4: 0.1,
-        5: 0.9,}
+        5: 0.9,},
+        numberOfEnemies: 60
     }
     
 }
